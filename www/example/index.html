@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<title>Example Page</title>
+	</head>
+    <body>
+        <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+        <script>
+            init();
+
+            async function init() {
+                const [{Chart, default: init}, {main, setup}] = await Promise.all([
+                    import("/release/wasm_demo.js"),
+                    import("./example.js"),
+                ]);
+
+                await init();
+                setup(Chart);
+                main();
+            }
+        </script>
+		<div class="flex items-center flex-col mb-4 mt-4 ml-64 mr-64">
+			<h1>Example Page</h1>
+			<div id="status">Loading WebAssembly...</div>
+			<canvas id="canvas" width="600" height="400"></canvas>
+		</div>
+    </body>
+</html>
