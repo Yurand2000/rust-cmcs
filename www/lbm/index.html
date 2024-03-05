@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<title>Linear Birth Model</title>        
+	</head>
+    <body>
+        <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+        <script>
+            init();
+
+            async function init() {
+                const [{ILinearBirthModel, ILinearBirthModelParams, default: init}, {main, setup}] = await Promise.all([
+                    import("/release/wasm_demo.js"),
+                    import("./index.js"),
+                ]);
+
+                await init();
+                setup(ILinearBirthModel, ILinearBirthModelParams);
+                main();
+            }
+        </script>
+        <div class="flex bg-gray-200 items-center flex-col rounded-lg shadow m-8">
+            <div class="flex items-center flex-col mb-4 mt-4 bg-white rounded-lg shadow m-4">
+                <h1 class="mt-4 text-5xl font-extrabold leading-none text-gray-900">
+                    Linear Birth Model
+                </h1>
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                    Lorem ipsum
+                </p>
+                <canvas class="m-2" id="canvas" width="600" height="400"></canvas>
+                <div class="flex items-left flex-row m-4">
+                    <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">
+                        <label for="init_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Population</label>
+                        <input id="init_pop" type="range" min="1" max="10" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="offsprings" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Offsprings per Individual</label>
+                        <input id="offsprings" type="range" min="1" max="5" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="repr_rate" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Reproduction Rate</label>
+                        <input id="repr_rate" type="range" min="1" max="5" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </ul>
+                    <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">    
+                        <label for="step_size" class="block mb-2 text-sm font-medium text-gray-900">Delta Step Size</label>
+                        <input id="step_size" type="range" min="1" max="5" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="max_time" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Max Simulation Time</label>
+                        <input id="max_time" type="range" min="10" max="100" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </ul>
+                </div>
+                <p id="status" class="mb-6 font-normal text-gray-500 sm:px-16 xl:px-48">
+                    Loading WebAssembly...
+                </p>
+            </div>
+        </div>
+        <footer class="bg-gray-200 rounded-lg shadow m-8">
+            <div class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
+            <span class="text-sm text-gray-800 sm:text-center">
+                Yuri Andriaccio (yurand2000@gmail.com)
+            </span>
+            <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-800 sm:mt-0">
+                <li>
+                    <a href="#" class="hover:underline me-4 md:me-6">Home</a>
+                </li>
+                <li>
+                    <a href="#" class="hover:underline">Discrete Dynamical Systems</a>
+                </li>
+            </ul>
+            </div>
+        </footer>
+    </body>
+</html>

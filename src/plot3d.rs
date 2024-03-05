@@ -1,9 +1,9 @@
-use crate::DrawResult;
+use crate::MyDrawResult;
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
 use web_sys::HtmlCanvasElement;
 
-pub fn draw(canvas: HtmlCanvasElement, pitch: f64, yaw: f64) -> DrawResult<()> {
+pub fn draw(canvas: HtmlCanvasElement, pitch: f64, yaw: f64) -> MyDrawResult<()> {
     let area = CanvasBackend::with_canvas_object(canvas)
         .unwrap()
         .into_drawing_area();

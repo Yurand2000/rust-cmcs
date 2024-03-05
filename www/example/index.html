@@ -17,7 +17,7 @@
             async function init() {
                 const [{Chart, default: init}, {main, setup}] = await Promise.all([
                     import("/release/wasm_demo.js"),
-                    import("./example.js"),
+                    import("./index.js"),
                 ]);
 
                 await init();
