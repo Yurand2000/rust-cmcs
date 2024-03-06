@@ -4,6 +4,7 @@ class ILinearBirthModelParams {}
 const canvas = document.getElementById("canvas");
 const status = document.getElementById("status");
 const canvas_text = document.getElementById("canvas_text");
+const plot_type = document.getElementById("plot_type");
 
 const init_pop = document.getElementById("init_pop");
 const offsprings = document.getElementById("offsprings");
@@ -29,6 +30,7 @@ export function setup(WasmModel, WasmParams) {
 function setupUI() {
     status.innerText = "WebAssembly loaded!";
     window.addEventListener("resize", setupCanvas);
+    plot_type.addEventListener("change", updatePlot);
 	init_pop.addEventListener("input", updatePlot);
 	offsprings.addEventListener("input", updatePlot);
 	repr_rate.addEventListener("input", updatePlot);
@@ -60,10 +62,10 @@ function updatePlot() {
         .initial_population(Number(init_pop.value))
         .offsprings_per_individual(Number(offsprings.value))
         .reproduction_period(Number(repr_rate.value));
-    chart = ILinearBirthModel.draw(canvas, params);
+    chart = ILinearBirthModel.draw(canvas, plot_type.value, params);
     canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
         `Time Step (Δt): ${step_size.value}, ` + 
-        `Initial Pop (N0): ${init_pop.value}, ` + 
+        `Initial Pop (N(0)): ${init_pop.value}, ` + 
         `Offsprings (λ): ${offsprings.value}, ` + 
         `Reproduction Period (σ): ${repr_rate.value}`;
     const end = performance.now();

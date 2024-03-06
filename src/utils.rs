@@ -1,7 +1,4 @@
-use std::marker::PhantomData;
-
 use wasm_bindgen::prelude::*;
-use crate::prelude::*;
 
 pub mod prelude {
     pub use super::{
@@ -12,6 +9,8 @@ pub mod prelude {
         draw_prelude,
         draw_generic,
         LimitedSimulation,
+        PhaseGraphSlope,
+        PhaseGraphLines,
     };
 }
 
@@ -69,30 +68,108 @@ pub fn draw_generic<F, T, Params>(fun: F) -> impl Fn(web_sys::HtmlCanvasElement,
 }
 
 // simulation helper structs
-pub struct LimitedSimulation<T, X, Y, XIT, YIT>
-    where T: Iterator<Item = (XIT, YIT)>, XIT: PartialOrd + Into<X>, YIT: Into<Y>
+pub struct LimitedSimulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)>, X: PartialOrd
 {
     iterator: T,
-    max_time: XIT,
-    _phantom: PhantomData<(X, Y)>
+    max_x: X,
 }
 
-impl<T, X, Y, XIT, YIT> LimitedSimulation<T, X, Y, XIT, YIT>
-    where T: Iterator<Item = (XIT, YIT)>, XIT: PartialOrd + Into<X>, YIT: Into<Y>
+impl<T, X, Y> LimitedSimulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)>, X: PartialOrd
 {
-    pub fn wrap(simulator: T, max_time: XIT) -> Self {
-        Self { iterator: simulator, max_time, _phantom: PhantomData }
+    pub fn wrap(simulator: T, max_time: X) -> Self {
+        Self { iterator: simulator, max_x: max_time }
     }
 }
 
-impl<T, X, Y, XIT, YIT> Iterator for LimitedSimulation<T, X, Y, XIT, YIT>
-    where T: Iterator<Item = (XIT, YIT)>, XIT: PartialOrd + Into<X>, YIT: Into<Y>
+impl<T, X, Y> Iterator for LimitedSimulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)>, X: PartialOrd
 {
     type Item = (X, Y);
 
     fn next(&mut self) -> Option<Self::Item> {
         self.iterator.next()
-            .filter(|(time, _)| time <= &self.max_time)
-            .map(|(x,y)| (x.into(), y.into()))
+            .filter(|(x, _)| x <= &self.max_x)
+    }
+}
+
+// Phase Graph Utils
+pub struct PhaseGraphSlope<T, X, Y>
+    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd, Y: PartialOrd
+{
+    iterator_pre: T,
+    iterator_post: T,
+}
+
+impl<T, X, Y> PhaseGraphSlope<T, X, Y>
+    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd, Y: PartialOrd
+{
+    pub fn new(iterator: T) -> Self {
+        let mut iterator_post = iterator.clone();
+        iterator_post.next();
+
+        Self {
+            iterator_pre: iterator,
+            iterator_post,
+        }
+    }
+}
+
+impl<T, X, Y> Iterator for PhaseGraphSlope<T, X, Y>
+    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd, Y: PartialOrd
+{
+    type Item = (Y, Y);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iterator_pre.next()
+            .zip(self.iterator_post.next())
+            .map(|((_, y0),(_, y1))| (y0, y1))
+    }
+}
+
+pub struct PhaseGraphLines<T, X, Y>
+    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd, Y: PartialOrd + Clone
+{
+    iterator_pre: T,
+    iterator_post: T,
+    pre_last_moved: bool,
+    last_coord: (Y, Y)
+}
+
+impl<T, X, Y> PhaseGraphLines<T, X, Y>
+    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd, Y: PartialOrd + Clone
+{
+    pub fn new(iterator: T) -> Self {
+        let mut iterator_post = iterator.clone();
+        let Some((_, y)) = iterator_post.next() else { panic!() };
+        
+        Self {
+            iterator_pre: iterator,
+            iterator_post,
+            pre_last_moved: false,
+            last_coord: (y.clone(), y),
+        }
+    }
+}
+
+impl<T, X, Y> Iterator for PhaseGraphLines<T, X, Y>
+    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd, Y: PartialOrd + Clone
+{
+    type Item = (Y, Y);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (last_pre, last_post) = self.last_coord.clone();
+        let pre_last_moved = self.pre_last_moved;
+        self.pre_last_moved = !self.pre_last_moved;
+        if pre_last_moved {
+            let (_, post) = self.iterator_post.next()?;
+            self.last_coord = (last_pre, post);
+            Some(self.last_coord.clone())
+        } else {
+            let (_, pre) = self.iterator_pre.next()?;
+            self.last_coord = (pre, last_post);
+            Some(self.last_coord.clone())
+        }
     }
 }

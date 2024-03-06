@@ -21,15 +21,26 @@ pub struct ILinearBirthModelParams {
     max_population_display: f32,
 }
 
+pub enum ILinearBirthModelGraphType {
+    Function,
+    PhaseGraph
+}
+
 #[wasm_bindgen]
 impl ILinearBirthModel {
-    pub fn draw(canvas: HtmlCanvasElement, params: ILinearBirthModelParams) -> Result<(), JsValue> {
-        draw_generic(Self::draw_inner)(canvas, params)
+    pub fn draw(canvas: HtmlCanvasElement, typ: String, params: ILinearBirthModelParams) -> Result<(), JsValue> {
+        match ILinearBirthModelGraphType::from_string(typ) {
+            Some(ILinearBirthModelGraphType::Function) => 
+                draw_generic(Self::draw_function)(canvas, params),
+            Some(ILinearBirthModelGraphType::PhaseGraph) =>
+                draw_generic(Self::draw_phase_graph)(canvas, params),
+            None =>
+                Err(format!("Graph type not supported").into())
+        }
     }
 
-    fn draw_inner(canvas: HtmlCanvasElement, params: ILinearBirthModelParams) -> MyDrawResult<()> {
+    fn draw_function(canvas: HtmlCanvasElement, params: ILinearBirthModelParams) -> MyDrawResult<()> {
         let area = draw_prelude(canvas)?;
-        let font: FontDesc = ("sans-serif", 20.0).into();
         area.fill(&WHITE)?;
     
         let x_axis_range = 0f32..params.max_time;
@@ -50,6 +61,8 @@ impl ILinearBirthModel {
             .build_cartesian_2d(x_axis_range, y_axis_range)?;
     
         chart.configure_mesh()
+            .x_desc("t")
+            .y_desc("N(t)")
             .x_labels(params.max_time as usize)
             .y_labels(10)
             .draw()?;
@@ -62,9 +75,70 @@ impl ILinearBirthModel {
                     params.offsprings_per_individual,
                     params.reproduction_period
                 ).map(|(x, y)| (x, y as u32)),
-                params.max_time,
+                chart.x_range().end,
             ),
             &RED
+        ))?;
+    
+        Ok(())
+    }
+    
+    fn draw_phase_graph(canvas: HtmlCanvasElement, params: ILinearBirthModelParams) -> MyDrawResult<()> {
+        let area = draw_prelude(canvas)?;
+        area.fill(&WHITE)?;
+
+        let max_population_display =
+            if params.max_population_display == 0f32 {
+                params.predict_max_population_size()
+            } else {
+                params.max_population_display
+            };
+
+        let x_axis_range = 0f32..max_population_display;
+        let y_axis_range = 0f32..max_population_display;
+    
+        let mut chart = ChartBuilder::on(&area)
+            .margin(20u32)
+            .x_label_area_size(30u32)
+            .y_label_area_size(30u32)
+            .build_cartesian_2d(x_axis_range, y_axis_range)?;
+    
+        chart.configure_mesh()
+            .x_desc("N(t)")
+            .y_desc("N(t+1)")
+            .x_labels(10)
+            .y_labels(10)
+            .draw()?;
+
+        let birth_model = LinearBirthModel::new(
+            params.initial_population,
+            params.time_step,
+            params.offsprings_per_individual,
+            params.reproduction_period
+        );
+
+        // draw bisector
+        chart.draw_series(LineSeries::new(
+            [(0f32, 0f32), (chart.x_range().end, chart.y_range().end)],
+            &BLACK
+        ))?;
+
+        // draw ratio
+        chart.draw_series(LineSeries::new(
+            LimitedSimulation::wrap(
+                PhaseGraphSlope::new(birth_model.clone()),
+                chart.x_range().end
+            ),
+            &RED
+        ))?;
+
+        // draw phase graph
+        chart.draw_series(LineSeries::new(
+            LimitedSimulation::wrap(
+                PhaseGraphLines::new(birth_model),                
+                chart.x_range().end
+            ),
+            &BLACK
         ))?;
     
         Ok(())
@@ -114,7 +188,17 @@ impl ILinearBirthModelParams {
     }
 }
 
+impl ILinearBirthModelGraphType {
+    fn from_string(value: String) -> Option<Self> {
+        match value.as_str() {
+            "normal" => Some(ILinearBirthModelGraphType::Function),
+            "phase" => Some(ILinearBirthModelGraphType::PhaseGraph),
+            _ => None
+        }
+    }
+}
 
+#[derive(Clone)]
 struct LinearBirthModel {
     initial_value: f32,
     grow_factor: f32,

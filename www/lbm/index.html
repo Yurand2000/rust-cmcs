@@ -30,10 +30,18 @@
                 <h1 class="mt-4 text-5xl font-extrabold leading-none text-gray-900">
                     Linear Birth Model
                 </h1>
+                <p class="mt-4 ml-4 mr-4 text-xl font-normal">
+                    N(t+1) = (1 + λ*Δt/σ) * N(t)
+                </p>
                 <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
                     Lorem ipsum
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>
+                <label for="plot_type" class="block mb-2 text-sm font-medium text-gray-900">Plot Type: </label>
+                <select id="plot_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5:ring-blue-500:border-blue-500">
+                    <option value="normal">Function Plot</option>
+                    <option value="phase">Phase Graph</option>
+                </select>
                 <div class="flex items-left flex-row m-4">
                     <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">
                         <label for="init_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Population</label>
