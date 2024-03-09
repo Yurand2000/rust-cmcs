@@ -63,16 +63,19 @@ impl ILinearBirthModel {
             .y_labels(10)
             .draw()?;
 
+        let birth_model = LinearBirthModel::new(
+            params.initial_population,
+            params.time_step,
+            params.offsprings_per_individual,
+            params.reproduction_period
+        );
+
+        let simulation = Simulation::new(birth_model)
+            .map(|(x, y)| (x, y as u32))
+            .time_limit(chart.x_range().end);
+
         chart.draw_series(LineSeries::new(
-            LimitedSimulation::wrap(
-                LinearBirthModel::new(
-                    params.initial_population,
-                    params.time_step,
-                    params.offsprings_per_individual,
-                    params.reproduction_period
-                ).map(|(x, y)| (x, y as u32)),
-                chart.x_range().end,
-            ),
+            simulation,
             &RED
         ))?;
     
@@ -121,19 +124,15 @@ impl ILinearBirthModel {
 
         // draw ratio
         chart.draw_series(LineSeries::new(
-            LimitedSimulation::wrap(
-                PhaseGraphSlope::new(birth_model.clone()),
-                chart.x_range().end
-            ),
+            Simulation::phase_graph_slope(birth_model.clone())
+                .time_limit(chart.x_range().end),
             &RED
         ))?;
 
         // draw phase graph
         chart.draw_series(LineSeries::new(
-            LimitedSimulation::wrap(
-                PhaseGraphLines::new(birth_model),                
-                chart.x_range().end
-            ),
+            Simulation::phase_graph_lines(birth_model.clone())
+                .time_limit(chart.x_range().end),
             &BLACK
         ))?;
     

@@ -62,15 +62,18 @@ impl ILinearBirthDeathModel {
             .y_labels(10)
             .draw()?;
 
+        let model = LinearBirthDeathModel::new(
+            params.initial_population,
+            params.birth_rate,
+            params.death_rate
+        );
+
+        let simulation = Simulation::new(model)
+            .map(|(x, y)| (x, y as u32))
+            .time_limit(chart.x_range().end);
+
         chart.draw_series(LineSeries::new(
-            LimitedSimulation::wrap(
-                LinearBirthDeathModel::new(
-                    params.initial_population,
-                    params.birth_rate,
-                    params.death_rate
-                ).map(|(x, y)| (x, y as u32)),
-                chart.x_range().end,
-            ),
+            simulation,
             &RED
         ))?;
     
@@ -106,7 +109,7 @@ impl ILinearBirthDeathModel {
             .y_labels(10)
             .draw()?;
 
-        let birth_model = LinearBirthDeathModel::new(
+        let model = LinearBirthDeathModel::new(
             params.initial_population,
             params.birth_rate,
             params.death_rate
@@ -120,25 +123,17 @@ impl ILinearBirthDeathModel {
 
         // draw ratio
         chart.draw_series(LineSeries::new(
-            MaxStepSimulation::wrap(
-                LimitedSimulation::wrap(
-                    PhaseGraphSlope::new(birth_model.clone()),              
-                    chart.x_range().end
-                ),
-                MAX_RENDER_STEPS
-            ),
+            Simulation::phase_graph_slope(model.clone())
+                .time_limit(chart.x_range().end)
+                .max_steps(MAX_RENDER_STEPS),
             &RED
         ))?;
 
         // draw phase graph
         chart.draw_series(LineSeries::new(
-            MaxStepSimulation::wrap(
-                LimitedSimulation::wrap(
-                    PhaseGraphLines::new(birth_model),                
-                    chart.x_range().end
-                ),
-                MAX_RENDER_STEPS
-            ),
+            Simulation::phase_graph_lines(model.clone())
+                .time_limit(chart.x_range().end)
+                .max_steps(MAX_RENDER_STEPS),
             &BLACK
         ))?;
     

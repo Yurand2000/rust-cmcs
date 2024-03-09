@@ -8,6 +8,7 @@ pub mod prelude {
         MyDrawingArea,
         draw_prelude,
         draw_generic,
+        Simulation,
         LimitedSimulation,
         PhaseGraphSlope,
         PhaseGraphLines,
@@ -68,7 +69,58 @@ pub fn draw_generic<F, T, Params>(fun: F) -> impl Fn(web_sys::HtmlCanvasElement,
     }
 }
 
+// simulation builder
+
+#[derive(Clone)]
+pub struct Simulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd + Clone, Y: PartialOrd + Clone
+{
+    simulation: T
+}
+
+impl<T, X, Y> Simulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd + Clone, Y: PartialOrd + Clone
+{
+    pub fn new(simulation: T) -> Self {
+        Self { simulation }
+    }
+
+    pub fn phase_graph_slope(simulation: T) -> Simulation<PhaseGraphSlope<T, X, Y>, Y, Y> {
+        Simulation { simulation: PhaseGraphSlope::wrap(simulation) }
+    }
+
+    pub fn phase_graph_lines(simulation: T) -> Simulation<PhaseGraphLines<T, X, Y>, Y, Y> {
+        Simulation { simulation: PhaseGraphLines::wrap(simulation) }
+    }
+
+    pub fn max_steps(self, steps: usize) -> Simulation<MaxStepSimulation<T, X, Y>, X, Y> {
+        Simulation { simulation: MaxStepSimulation::wrap(self.simulation, steps) }
+    }
+
+    pub fn time_limit(self, max_time: X) -> Simulation<LimitedSimulation<T, X, Y>, X, Y> {
+        Simulation { simulation: LimitedSimulation::wrap(self.simulation, max_time) }
+    }
+
+    pub fn map<F, X2, Y2>(self, fun: F) -> Simulation<std::iter::Map<T, F>, X2, Y2>
+        where X2: PartialOrd + Clone, Y2: PartialOrd + Clone,
+              F: FnMut((X, Y)) -> (X2, Y2) + Clone
+    {
+        Simulation { simulation: self.simulation.map(fun) }
+    }
+}
+
+impl<T, X, Y> Iterator for Simulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd + Clone, Y: PartialOrd + Clone
+{
+    type Item = (X, Y);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.simulation.next()
+    }
+}
+
 // simulation helper structs
+#[derive(Clone)]
 pub struct LimitedSimulation<T, X, Y>
     where T: Iterator<Item = (X, Y)>, X: PartialOrd
 {
@@ -95,6 +147,7 @@ impl<T, X, Y> Iterator for LimitedSimulation<T, X, Y>
     }
 }
 
+#[derive(Clone)]
 pub struct MaxStepSimulation<T, X, Y>
     where T: Iterator<Item = (X, Y)>
 {
@@ -127,6 +180,7 @@ impl<T, X, Y> Iterator for MaxStepSimulation<T, X, Y>
 }
 
 // Phase Graph Utils
+#[derive(Clone)]
 pub struct PhaseGraphSlope<T, X, Y>
     where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd, Y: PartialOrd
 {
@@ -137,7 +191,7 @@ pub struct PhaseGraphSlope<T, X, Y>
 impl<T, X, Y> PhaseGraphSlope<T, X, Y>
     where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd, Y: PartialOrd
 {
-    pub fn new(iterator: T) -> Self {
+    pub fn wrap(iterator: T) -> Self {
         let mut iterator_post = iterator.clone();
         iterator_post.next();
 
@@ -160,6 +214,7 @@ impl<T, X, Y> Iterator for PhaseGraphSlope<T, X, Y>
     }
 }
 
+#[derive(Clone)]
 pub struct PhaseGraphLines<T, X, Y>
     where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd, Y: PartialOrd + Clone
 {
@@ -172,7 +227,7 @@ pub struct PhaseGraphLines<T, X, Y>
 impl<T, X, Y> PhaseGraphLines<T, X, Y>
     where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd, Y: PartialOrd + Clone
 {
-    pub fn new(iterator: T) -> Self {
+    pub fn wrap(iterator: T) -> Self {
         let mut iterator_post = iterator.clone();
         let Some((_, y)) = iterator_post.next() else { panic!() };
         
