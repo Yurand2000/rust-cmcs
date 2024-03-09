@@ -11,6 +11,7 @@ pub mod prelude {
         LimitedSimulation,
         PhaseGraphSlope,
         PhaseGraphLines,
+        MaxStepSimulation
     };
 }
 
@@ -91,6 +92,37 @@ impl<T, X, Y> Iterator for LimitedSimulation<T, X, Y>
     fn next(&mut self) -> Option<Self::Item> {
         self.iterator.next()
             .filter(|(x, _)| x <= &self.max_x)
+    }
+}
+
+pub struct MaxStepSimulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)>
+{
+    iterator: T,
+    last_step: usize,
+    max_steps: usize
+}
+
+impl<T, X, Y> MaxStepSimulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)>
+{
+    pub fn wrap(simulation: T, max_steps: usize) -> Self {
+        Self { iterator: simulation, last_step: 0, max_steps }
+    }
+}
+
+impl<T, X, Y> Iterator for MaxStepSimulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)>
+{
+    type Item = (X, Y);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.last_step < self.max_steps {
+            self.last_step += 1;
+            self.iterator.next()
+        } else {
+            None
+        }
     }
 }
 

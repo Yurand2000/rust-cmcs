@@ -78,6 +78,8 @@ impl ILinearBirthDeathModel {
     }
     
     fn draw_phase_graph(canvas: HtmlCanvasElement, params: ILinearBirthDeathModelParams) -> MyDrawResult<()> {
+        const MAX_RENDER_STEPS: usize = 20000;
+
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
 
@@ -118,18 +120,24 @@ impl ILinearBirthDeathModel {
 
         // draw ratio
         chart.draw_series(LineSeries::new(
-            LimitedSimulation::wrap(
-                PhaseGraphSlope::new(birth_model.clone()),
-                chart.x_range().end
+            MaxStepSimulation::wrap(
+                LimitedSimulation::wrap(
+                    PhaseGraphSlope::new(birth_model.clone()),              
+                    chart.x_range().end
+                ),
+                max_render_steps
             ),
             &RED
         ))?;
 
         // draw phase graph
         chart.draw_series(LineSeries::new(
-            LimitedSimulation::wrap(
-                PhaseGraphLines::new(birth_model),                
-                chart.x_range().end
+            MaxStepSimulation::wrap(
+                LimitedSimulation::wrap(
+                    PhaseGraphLines::new(birth_model),                
+                    chart.x_range().end
+                ),
+                max_render_steps
             ),
             &BLACK
         ))?;
