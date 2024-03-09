@@ -125,7 +125,7 @@ impl ILinearBirthDeathModel {
                     PhaseGraphSlope::new(birth_model.clone()),              
                     chart.x_range().end
                 ),
-                max_render_steps
+                MAX_RENDER_STEPS
             ),
             &RED
         ))?;
@@ -137,7 +137,7 @@ impl ILinearBirthDeathModel {
                     PhaseGraphLines::new(birth_model),                
                     chart.x_range().end
                 ),
-                max_render_steps
+                MAX_RENDER_STEPS
             ),
             &BLACK
         ))?;
