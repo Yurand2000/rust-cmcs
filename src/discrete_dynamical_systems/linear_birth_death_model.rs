@@ -16,11 +16,6 @@ pub struct ILinearBirthDeathModelParams {
     max_population_display: f32,
 }
 
-pub enum GraphType {
-    Function,
-    PhaseGraph
-}
-
 #[wasm_bindgen]
 impl ILinearBirthDeathModel {
     pub fn draw(canvas: HtmlCanvasElement, typ: String, params: ILinearBirthDeathModelParams) -> Result<(), JsValue> {
@@ -179,16 +174,6 @@ impl ILinearBirthDeathModelParams {
             f32::powf(rate, self.max_time) * self.initial_population
         } else {
             self.initial_population
-        }
-    }
-}
-
-impl GraphType {
-    fn from_string(value: String) -> Option<Self> {
-        match value.as_str() {
-            "normal" => Some(GraphType::Function),
-            "phase" => Some(GraphType::PhaseGraph),
-            _ => None
         }
     }
 }
