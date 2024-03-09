@@ -7,46 +7,38 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
 		<script src="https://cdn.tailwindcss.com"></script>
-		<title>Plotters WebAssembly Demo</title>
+		<title>CMCS</title>        
 	</head>
     <body>
-        <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
-        <script>
-            init();
-
-            async function init() {
-                const [{Chart, default: init}, {main, setup}] = await Promise.all([
-                    import("/release/wasm_demo.js"),
-                    import("./index.js"),
-                ]);
-
-                await init();
-                setup(Chart);
-                main();
-            }
-        </script>
-		<div class="flex items-center flex-col mb-4 mt-4 ml-64 mr-64">
-			<h1>Plotters WebAssembly Demo</h1>
-			<div id="coord"></div>
-			<canvas id="canvas" width="600" height="400"></canvas>
-			<div id="status">Loading WebAssembly...</div>
-			<div id="control">
-				<label for="plot-type">Demo: </label>
-				<select id="plot-type">
-					<option value="0">Graph of y=1</option>
-					<option value="1">Graph of y=x</option>
-					<option value="2">Graph of y=x^2</option>
-					<option value="3">Graph of y=x^3</option>
-					<option value="4">Graph of y=x^4</option>
-					<option value="5">Graph of y=x^5</option>
-					<option value="mandelbrot">Mandelbrot Set</option>
-					<option value="3d-plot">3D Plot Demo</option>
-				</select>
-				<div id="3d-control" class="hide">
-					<label for="pitch">Pitch: </label> <input type="range" min="0" max="157" id="pitch" value="10"> <br/>
-					<label for="yaw">Yaw: </label> <input type="range" min="0" max="314" id="yaw" value="50">
-				</div>
-			</div>
-		</div>
+        <div class="flex bg-gray-200 items-center flex-col rounded-lg shadow m-8">
+            <div class="flex items-center flex-col mb-4 mt-4 bg-white rounded-lg shadow m-4">
+                <h1 class="mt-4 ml-8 mr-8 text-5xl font-extrabold leading-none text-gray-900">
+                    CMCS
+                </h1>
+                <p class="mt-4 ml-4 mr-4 text-xl font-normal">
+                    Discrete Dynamical Models
+                </p>
+                <ul class="flex flex-col items-left mt-3 font-medium text-gray-800 sm:mt-0">
+                    <li><a href="/linear_birth_model" class="hover:underline me-4 md:me-6">
+                        Linear Birth Model
+                    </a></li>
+                    <li><a href="/linear_birth_death_model" class="hover:underline me-4 md:me-6">
+                        Linear Birth/Death Model
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+        <footer class="bg-gray-200 rounded-lg shadow m-8">
+            <div class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
+            <span class="text-sm text-gray-800 sm:text-center">
+                Yuri Andriaccio (yurand2000@gmail.com)
+            </span>
+            <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-800 sm:mt-0">
+                <li>
+                    <a href="/" class="hover:underline me-4 md:me-6">Home</a>
+                </li>
+            </ul>
+            </div>
+        </footer>
     </body>
 </html>

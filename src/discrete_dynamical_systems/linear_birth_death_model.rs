@@ -5,15 +5,14 @@ use web_sys::HtmlCanvasElement;
 use crate::prelude::*;
 
 #[wasm_bindgen]
-pub struct ILinearBirthModel { }
+pub struct ILinearBirthDeathModel { }
 
 #[wasm_bindgen]
-pub struct ILinearBirthModelParams {
+pub struct ILinearBirthDeathModelParams {
     max_time: f32,
-    time_step: f32,
     initial_population: f32,
-    offsprings_per_individual: f32,
-    reproduction_period: f32,
+    birth_rate: f32,
+    death_rate: f32,
     max_population_display: f32,
 }
 
@@ -23,8 +22,8 @@ pub enum GraphType {
 }
 
 #[wasm_bindgen]
-impl ILinearBirthModel {
-    pub fn draw(canvas: HtmlCanvasElement, typ: String, params: ILinearBirthModelParams) -> Result<(), JsValue> {
+impl ILinearBirthDeathModel {
+    pub fn draw(canvas: HtmlCanvasElement, typ: String, params: ILinearBirthDeathModelParams) -> Result<(), JsValue> {
         match GraphType::from_string(typ) {
             Some(GraphType::Function) => 
                 draw_generic(Self::draw_function)(canvas, params),
@@ -35,7 +34,7 @@ impl ILinearBirthModel {
         }
     }
 
-    fn draw_function(canvas: HtmlCanvasElement, params: ILinearBirthModelParams) -> MyDrawResult<()> {
+    fn draw_function(canvas: HtmlCanvasElement, params: ILinearBirthDeathModelParams) -> MyDrawResult<()> {
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
     
@@ -65,11 +64,10 @@ impl ILinearBirthModel {
 
         chart.draw_series(LineSeries::new(
             LimitedSimulation::wrap(
-                LinearBirthModel::new(
+                LinearBirthDeathModel::new(
                     params.initial_population,
-                    params.time_step,
-                    params.offsprings_per_individual,
-                    params.reproduction_period
+                    params.birth_rate,
+                    params.death_rate
                 ).map(|(x, y)| (x, y as u32)),
                 chart.x_range().end,
             ),
@@ -79,7 +77,7 @@ impl ILinearBirthModel {
         Ok(())
     }
     
-    fn draw_phase_graph(canvas: HtmlCanvasElement, params: ILinearBirthModelParams) -> MyDrawResult<()> {
+    fn draw_phase_graph(canvas: HtmlCanvasElement, params: ILinearBirthDeathModelParams) -> MyDrawResult<()> {
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
 
@@ -106,11 +104,10 @@ impl ILinearBirthModel {
             .y_labels(10)
             .draw()?;
 
-        let birth_model = LinearBirthModel::new(
+        let birth_model = LinearBirthDeathModel::new(
             params.initial_population,
-            params.time_step,
-            params.offsprings_per_individual,
-            params.reproduction_period
+            params.birth_rate,
+            params.death_rate
         );
 
         // draw bisector
@@ -142,19 +139,14 @@ impl ILinearBirthModel {
 }
 
 #[wasm_bindgen]
-impl ILinearBirthModelParams {
+impl ILinearBirthDeathModelParams {
     pub fn builder() -> Self {
-        Self { max_time: 1f32, time_step: 1f32, initial_population: 1f32,
-            offsprings_per_individual: 1f32, reproduction_period: 1f32, max_population_display: 0f32 }
+        Self { max_time: 1f32, initial_population: 1f32,
+            birth_rate: 1f32, death_rate: 0.1f32, max_population_display: 0f32 }
     }
 
     pub fn max_time(mut self, max_time: f32) -> Self {
         self.max_time = max_time;
-        self
-    }
-
-    pub fn time_step(mut self, time_step: f32) -> Self {
-        self.time_step = time_step;
         self
     }
     
@@ -163,13 +155,13 @@ impl ILinearBirthModelParams {
         self
     }
 
-    pub fn offsprings_per_individual(mut self, offsprings_per_individual: f32) -> Self {
-        self.offsprings_per_individual = offsprings_per_individual;
+    pub fn birth_rate(mut self, birth_rate: f32) -> Self {
+        self.birth_rate = birth_rate;
         self
     }
 
-    pub fn reproduction_period(mut self, reproduction_period: f32) -> Self {
-        self.reproduction_period = reproduction_period;
+    pub fn death_rate(mut self, death_rate: f32) -> Self {
+        self.death_rate = death_rate;
         self
     }
 
@@ -179,8 +171,12 @@ impl ILinearBirthModelParams {
     }
 
     fn predict_max_population_size(&self) -> f32 {
-        let rate = self.offsprings_per_individual * self.time_step / self.reproduction_period + 1f32;
-        f32::powf(rate, self.max_time / self.time_step) * self.initial_population
+        let rate = self.birth_rate - self.death_rate;
+        if rate > 1f32 {
+            f32::powf(rate, self.max_time) * self.initial_population
+        } else {
+            self.initial_population
+        }
     }
 }
 
@@ -195,34 +191,36 @@ impl GraphType {
 }
 
 #[derive(Clone)]
-struct LinearBirthModel {
+struct LinearBirthDeathModel {
     initial_value: f32,
     grow_factor: f32,
-    step_size: f32,
 
     last_step: Option<(f32, f32)>
 }
 
-impl LinearBirthModel {
-    pub fn new(initial_population: f32, time_step: f32, offsprings_per_individual: f32, reproduction_period: f32) -> Self {
+impl LinearBirthDeathModel {
+    pub fn new(initial_population: f32, birth_rate: f32, death_rate: f32) -> Self {
         Self {
             initial_value: initial_population,
-            grow_factor: 1f32 + offsprings_per_individual * time_step / reproduction_period,
-            step_size: time_step,
+            grow_factor: birth_rate - death_rate,
             last_step: None,
         }
     }
 }
 
-impl Iterator for LinearBirthModel {
+impl Iterator for LinearBirthDeathModel {
     type Item = (f32, f32);
     
     fn next(&mut self) -> Option<Self::Item> {
         if let Some((time, value)) = self.last_step {
-            let next_time = time + self.step_size;
+            let next_time = time + 1f32;
             let next_value = value * self.grow_factor;
-            self.last_step = Some((next_time, next_value));
-            self.last_step.clone()
+            if next_time != time || next_value != value {
+                self.last_step = Some((next_time, next_value));
+                self.last_step.clone()
+            } else {
+                None
+            }
         } else {
             let next_step = (0f32, self.initial_value);
             self.last_step = Some(next_step);
