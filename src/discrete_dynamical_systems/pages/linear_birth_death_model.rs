@@ -111,17 +111,19 @@ impl Model {
 
         // draw ratio
         chart.draw_series(LineSeries::new(
-            Simulation::phase_graph_slope(model.clone())
+            Simulation::new(model.clone())
                 .time_limit(chart.x_range().end)
-                .max_steps(MAX_RENDER_STEPS),
+                .max_steps(MAX_RENDER_STEPS)
+                .phase_graph_slope(),
             &RED
         ))?;
 
         // draw phase graph
         chart.draw_series(LineSeries::new(
-            Simulation::phase_graph_lines(model.clone())
+            Simulation::new(model)
                 .time_limit(chart.x_range().end)
-                .max_steps(MAX_RENDER_STEPS),
+                .max_steps(MAX_RENDER_STEPS)
+                .phase_graph_lines(),
             &BLACK
         ))?;
     

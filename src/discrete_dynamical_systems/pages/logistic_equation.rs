@@ -5,20 +5,19 @@ use web_sys::HtmlCanvasElement;
 use crate::prelude::*;
 use crate::discrete_dynamical_systems::prelude::*;
 
-#[wasm_bindgen(js_name = DDS_LBM)]
+#[wasm_bindgen(js_name = DDS_LE)]
 pub struct Model { }
 
-#[wasm_bindgen(js_name = DDS_LBM_Params)]
+#[wasm_bindgen(js_name = DDS_LE_Params)]
 pub struct Params {
     max_time: f32,
-    time_step: f32,
     initial_population: f32,
-    offsprings_per_individual: f32,
-    reproduction_period: f32,
+    birth_rate: f32,
+    carrying_capacity: f32,
     max_population_display: f32,
 }
 
-#[wasm_bindgen(js_class = DDS_LBM)]
+#[wasm_bindgen(js_class = DDS_LE)]
 impl Model {
     pub fn draw(canvas: HtmlCanvasElement, typ: String, params: Params) -> Result<(), JsValue> {
         match GraphType::from_string(typ) {
@@ -74,6 +73,8 @@ impl Model {
     }
     
     fn draw_phase_graph(canvas: HtmlCanvasElement, params: Params) -> MyDrawResult<()> {
+        const MAX_RENDER_STEPS: usize = 20000;
+        
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
 
@@ -112,6 +113,7 @@ impl Model {
         chart.draw_series(LineSeries::new(
             Simulation::new(model.clone())
                 .time_limit(chart.x_range().end)
+                .max_steps(MAX_RENDER_STEPS)
                 .phase_graph_slope(),
             &RED
         ))?;
@@ -120,6 +122,7 @@ impl Model {
         chart.draw_series(LineSeries::new(
             Simulation::new(model)
                 .time_limit(chart.x_range().end)
+                .max_steps(MAX_RENDER_STEPS)
                 .phase_graph_lines(),
             &BLACK
         ))?;
@@ -128,20 +131,15 @@ impl Model {
     }
 }
 
-#[wasm_bindgen(js_class = DDS_LBM_Params)]
+#[wasm_bindgen(js_class = DDS_LE_Params)]
 impl Params {
     pub fn builder() -> Self {
-        Self { max_time: 1f32, time_step: 1f32, initial_population: 1f32,
-            offsprings_per_individual: 1f32, reproduction_period: 1f32, max_population_display: 0f32 }
+        Self { max_time: 1f32, initial_population: 1f32,
+            birth_rate: 1f32, carrying_capacity: 20f32, max_population_display: 0f32 }
     }
 
     pub fn max_time(mut self, max_time: f32) -> Self {
         self.max_time = max_time;
-        self
-    }
-
-    pub fn time_step(mut self, time_step: f32) -> Self {
-        self.time_step = time_step;
         self
     }
     
@@ -150,13 +148,13 @@ impl Params {
         self
     }
 
-    pub fn offsprings_per_individual(mut self, offsprings_per_individual: f32) -> Self {
-        self.offsprings_per_individual = offsprings_per_individual;
+    pub fn birth_rate(mut self, birth_rate: f32) -> Self {
+        self.birth_rate = birth_rate;
         self
     }
 
-    pub fn reproduction_period(mut self, reproduction_period: f32) -> Self {
-        self.reproduction_period = reproduction_period;
+    pub fn carrying_capacity(mut self, carrying_capacity: f32) -> Self {
+        self.carrying_capacity = carrying_capacity;
         self
     }
 
@@ -166,18 +164,16 @@ impl Params {
     }
 
     fn predict_max_population_size(&self) -> f32 {
-        let rate = self.offsprings_per_individual * self.time_step / self.reproduction_period + 1f32;
-        f32::powf(rate, self.max_time / self.time_step) * self.initial_population
+        let equilibrium = self.carrying_capacity * (1f32 - 1f32 / self.birth_rate);
+
+        f32::max(equilibrium, self.initial_population)
     }
 
-    fn to_model(self) -> LinearBirthModel {
-        let birth_rate = 1f32 + self.offsprings_per_individual * self.time_step / self.reproduction_period;
-
-        LinearBirthModel::new(
+    fn to_model(self) -> LogisticEquation {
+        LogisticEquation::new(
             self.initial_population,
-            birth_rate,
-            0f32,           // no migration
-            self.time_step,
+            self.birth_rate,
+            self.carrying_capacity
         )
     }
 }

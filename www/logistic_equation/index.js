@@ -8,7 +8,7 @@ const plot_type = document.getElementById("plot_type");
 
 const init_pop = document.getElementById("init_pop");
 const birth_rate = document.getElementById("birth_rate");
-const migration_coeff = document.getElementById("migration_coeff");
+const carrying_cap = document.getElementById("carrying_cap");
 const max_time = document.getElementById("max_time");
 
 let chart = null;
@@ -32,7 +32,7 @@ function setupUI() {
     plot_type.addEventListener("change", updatePlot);
 	init_pop.addEventListener("input", updatePlot);
 	birth_rate.addEventListener("input", updatePlot);
-	migration_coeff.addEventListener("input", updatePlot);
+	carrying_cap.addEventListener("input", updatePlot);
 	max_time.addEventListener("input", updatePlot);
 }
 
@@ -57,18 +57,14 @@ function updatePlot() {
     var params = Params.builder()
         .max_time(Number(max_time.value))
         .initial_population(Number(init_pop.value))
-        .birth_death_rate(Number(birth_rate.value))
-        .migration_coefficient(Number(migration_coeff.value));
+        .birth_rate(Number(birth_rate.value))
+        .carrying_capacity(Number(carrying_cap.value));
     chart = Model.draw(canvas, plot_type.value, params);
-    if (birth_rate.value < 1) {
-        var equilibrium = Math.round(migration_coeff.value / (1 - birth_rate.value));
-    } else {
-        var equilibrium = "No equilibrium";
-    }
+    let equilibrium = Math.round(carrying_cap.value * (1 - 1 / birth_rate.value));
     canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
         `Initial Pop (N(0)): ${init_pop.value}, ` + 
-        `Birth/Death Rate (α): ${birth_rate.value}, ` + 
-        `Migration Coefficient (β): ${migration_coeff.value}, ` +
+        `Birth Rate (r): ${birth_rate.value}, ` + 
+        `Carrying Capacity (K): ${carrying_cap.value}, ` +
         `Equilibrium Point: ${equilibrium}`;
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	

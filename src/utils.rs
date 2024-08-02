@@ -94,12 +94,12 @@ impl<T, X, Y> Simulation<T, X, Y>
         Self { simulation }
     }
 
-    pub fn phase_graph_slope(simulation: T) -> Simulation<PhaseGraphSlope<T, X, Y>, Y, Y> {
-        Simulation { simulation: PhaseGraphSlope::wrap(simulation) }
+    pub fn phase_graph_slope(self) -> Simulation<PhaseGraphSlope<T, X, Y>, Y, Y> {
+        Simulation { simulation: PhaseGraphSlope::wrap(self.simulation) }
     }
 
-    pub fn phase_graph_lines(simulation: T) -> Simulation<PhaseGraphLines<T, X, Y>, Y, Y> {
-        Simulation { simulation: PhaseGraphLines::wrap(simulation) }
+    pub fn phase_graph_lines(self) -> Simulation<PhaseGraphLines<T, X, Y>, Y, Y> {
+        Simulation { simulation: PhaseGraphLines::wrap(self.simulation) }
     }
 
     pub fn max_steps(self, steps: usize) -> Simulation<MaxStepSimulation<T, X, Y>, X, Y> {
