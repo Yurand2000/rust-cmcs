@@ -176,7 +176,6 @@ impl Params {
             birth_rate,
             0f32,           // no migration
             self.time_step,
-            200f32
         )
     }
 }

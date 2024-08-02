@@ -182,7 +182,6 @@ impl Params {
             self.birth_death_rate,
             self.migration_coefficient,
             1f32,
-            200f32,
         )
     }
 }

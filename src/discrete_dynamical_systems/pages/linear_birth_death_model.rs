@@ -178,7 +178,6 @@ impl Params {
             birth_rate,
             0f32, //no migration
             1f32,
-            200f32
         )
     }
 }
