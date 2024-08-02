@@ -1,2 +1,10 @@
-pub mod linear_birth_model;
-pub mod linear_birth_death_model;
+mod pages {
+    mod linear_birth_model;
+    mod linear_birth_death_model;    
+}
+
+mod prelude {
+    pub use super::linear_birth_model::*;
+}
+
+mod linear_birth_model;

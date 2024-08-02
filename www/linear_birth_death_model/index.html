@@ -15,13 +15,13 @@
             init();
 
             async function init() {
-                const [{ILinearBirthDeathModel, ILinearBirthDeathModelParams, default: init}, {main, setup}] = await Promise.all([
+                const [{DDS_LBDM, DDS_LBDM_Params, default: init}, {main, setup}] = await Promise.all([
                     import("/release/wasm_demo.js"),
                     import("./index.js"),
                 ]);
 
                 await init();
-                setup(ILinearBirthDeathModel, ILinearBirthDeathModelParams);
+                setup(DDS_LBDM, DDS_LBDM_Params);
                 main();
             }
         </script>

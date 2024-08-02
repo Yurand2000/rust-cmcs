@@ -1,5 +1,5 @@
-class ILinearBirthDeathModel {}
-class ILinearBirthDeathModelParams {}
+class Model {}
+class Params {}
 
 const canvas = document.getElementById("canvas");
 const status = document.getElementById("status");
@@ -21,8 +21,8 @@ export function main() {
 
 /** This function is used in `bootstrap.js` to setup imports. */
 export function setup(WasmModel, WasmParams) {
-    ILinearBirthDeathModel = WasmModel;
-    ILinearBirthDeathModelParams = WasmParams;
+    Model = WasmModel;
+    Params = WasmParams;
 }
 
 /** Add event listeners. */
@@ -54,12 +54,12 @@ function setupCanvas() {
 function updatePlot() {
     status.innerText = "Rendering...";
     const start = performance.now();
-    var params = ILinearBirthDeathModelParams.builder()
+    var params = Params.builder()
         .max_time(Number(max_time.value))
         .initial_population(Number(init_pop.value))
         .birth_rate(Number(birth_rate.value))
         .death_rate(Number(death_rate.value));
-    chart = ILinearBirthDeathModel.draw(canvas, plot_type.value, params);
+    chart = Model.draw(canvas, plot_type.value, params);
     canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
         `Initial Pop (N(0)): ${init_pop.value}, ` + 
         `Birth Rate (r): ${birth_rate.value}, ` + 

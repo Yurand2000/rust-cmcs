@@ -1,5 +1,5 @@
-class ILinearBirthModel {}
-class ILinearBirthModelParams {}
+class Model {}
+class Params {}
 
 const canvas = document.getElementById("canvas");
 const status = document.getElementById("status");
@@ -22,8 +22,8 @@ export function main() {
 
 /** This function is used in `bootstrap.js` to setup imports. */
 export function setup(WasmModel, WasmParams) {
-    ILinearBirthModel = WasmModel;
-    ILinearBirthModelParams = WasmParams;
+    Model = WasmModel;
+    Params = WasmParams;
 }
 
 /** Add event listeners. */
@@ -56,13 +56,13 @@ function setupCanvas() {
 function updatePlot() {
     status.innerText = "Rendering...";
     const start = performance.now();
-    var params = ILinearBirthModelParams.builder()
+    var params = Params.builder()
         .max_time(Number(max_time.value))
         .time_step(Number(step_size.value))
         .initial_population(Number(init_pop.value))
         .offsprings_per_individual(Number(offsprings.value))
         .reproduction_period(Number(repr_rate.value));
-    chart = ILinearBirthModel.draw(canvas, plot_type.value, params);
+    chart = Model.draw(canvas, plot_type.value, params);
     canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
         `Time Step (Δt): ${step_size.value}, ` + 
         `Initial Pop (N(0)): ${init_pop.value}, ` + 

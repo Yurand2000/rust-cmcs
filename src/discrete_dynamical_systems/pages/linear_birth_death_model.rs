@@ -3,12 +3,13 @@ use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 
 use crate::prelude::*;
+use crate::discrete_dynamical_systems::prelude::*;
 
-#[wasm_bindgen]
-pub struct ILinearBirthDeathModel { }
+#[wasm_bindgen(js_name = DDS_LBDM)]
+pub struct Model { }
 
-#[wasm_bindgen]
-pub struct ILinearBirthDeathModelParams {
+#[wasm_bindgen(js_name = DDS_LBDM_Params)]
+pub struct Params {
     max_time: f32,
     initial_population: f32,
     birth_rate: f32,
@@ -16,9 +17,9 @@ pub struct ILinearBirthDeathModelParams {
     max_population_display: f32,
 }
 
-#[wasm_bindgen]
-impl ILinearBirthDeathModel {
-    pub fn draw(canvas: HtmlCanvasElement, typ: String, params: ILinearBirthDeathModelParams) -> Result<(), JsValue> {
+#[wasm_bindgen(js_class = DDS_LBDM)]
+impl Model {
+    pub fn draw(canvas: HtmlCanvasElement, typ: String, params: Params) -> Result<(), JsValue> {
         match GraphType::from_string(typ) {
             Some(GraphType::Function) => 
                 draw_generic(Self::draw_function)(canvas, params),
@@ -29,7 +30,7 @@ impl ILinearBirthDeathModel {
         }
     }
 
-    fn draw_function(canvas: HtmlCanvasElement, params: ILinearBirthDeathModelParams) -> MyDrawResult<()> {
+    fn draw_function(canvas: HtmlCanvasElement, params: Params) -> MyDrawResult<()> {
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
     
@@ -57,11 +58,7 @@ impl ILinearBirthDeathModel {
             .y_labels(10)
             .draw()?;
 
-        let model = LinearBirthDeathModel::new(
-            params.initial_population,
-            params.birth_rate,
-            params.death_rate
-        );
+        let model = params.to_model();
 
         let simulation = Simulation::new(model)
             .map(|(x, y)| (x, y as u32))
@@ -75,7 +72,7 @@ impl ILinearBirthDeathModel {
         Ok(())
     }
     
-    fn draw_phase_graph(canvas: HtmlCanvasElement, params: ILinearBirthDeathModelParams) -> MyDrawResult<()> {
+    fn draw_phase_graph(canvas: HtmlCanvasElement, params: Params) -> MyDrawResult<()> {
         const MAX_RENDER_STEPS: usize = 20000;
 
         let area = draw_prelude(canvas)?;
@@ -104,11 +101,7 @@ impl ILinearBirthDeathModel {
             .y_labels(10)
             .draw()?;
 
-        let model = LinearBirthDeathModel::new(
-            params.initial_population,
-            params.birth_rate,
-            params.death_rate
-        );
+        let model = params.to_model();
 
         // draw bisector
         chart.draw_series(LineSeries::new(
@@ -136,8 +129,8 @@ impl ILinearBirthDeathModel {
     }
 }
 
-#[wasm_bindgen]
-impl ILinearBirthDeathModelParams {
+#[wasm_bindgen(js_class = DDS_LBDM_Params)]
+impl Params {
     pub fn builder() -> Self {
         Self { max_time: 1f32, initial_population: 1f32,
             birth_rate: 1f32, death_rate: 0.1f32, max_population_display: 0f32 }
@@ -176,43 +169,16 @@ impl ILinearBirthDeathModelParams {
             self.initial_population
         }
     }
-}
-
-#[derive(Clone)]
-struct LinearBirthDeathModel {
-    initial_value: f32,
-    grow_factor: f32,
-
-    last_step: Option<(f32, f32)>
-}
-
-impl LinearBirthDeathModel {
-    pub fn new(initial_population: f32, birth_rate: f32, death_rate: f32) -> Self {
-        Self {
-            initial_value: initial_population,
-            grow_factor: birth_rate - death_rate,
-            last_step: None,
-        }
-    }
-}
-
-impl Iterator for LinearBirthDeathModel {
-    type Item = (f32, f32);
     
-    fn next(&mut self) -> Option<Self::Item> {
-        if let Some((time, value)) = self.last_step {
-            let next_time = time + 1f32;
-            let next_value = value * self.grow_factor;
-            if next_time != time || next_value != value {
-                self.last_step = Some((next_time, next_value));
-                self.last_step.clone()
-            } else {
-                None
-            }
-        } else {
-            let next_step = (0f32, self.initial_value);
-            self.last_step = Some(next_step);
-            self.last_step.clone()
-        }
+    fn to_model(self) -> LinearBirthModel {
+        let birth_rate = self.birth_rate - self.death_rate;
+
+        LinearBirthModel::new(
+            self.initial_population,
+            birth_rate,
+            0f32, //no migration
+            1f32,
+            200f32
+        )
     }
 }
