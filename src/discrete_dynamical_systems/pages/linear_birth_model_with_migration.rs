@@ -5,19 +5,19 @@ use web_sys::HtmlCanvasElement;
 use crate::prelude::*;
 use crate::discrete_dynamical_systems::prelude::*;
 
-#[wasm_bindgen(js_name = DDS_LBDM)]
+#[wasm_bindgen(js_name = DDS_LBMM)]
 pub struct Model { }
 
-#[wasm_bindgen(js_name = DDS_LBDM_Params)]
+#[wasm_bindgen(js_name = DDS_LBMM_Params)]
 pub struct Params {
     max_time: f32,
     initial_population: f32,
-    birth_rate: f32,
-    death_rate: f32,
+    birth_death_rate: f32,
+    migration_coefficient: f32,
     max_population_display: f32,
 }
 
-#[wasm_bindgen(js_class = DDS_LBDM)]
+#[wasm_bindgen(js_class = DDS_LBMM)]
 impl Model {
     pub fn draw(canvas: HtmlCanvasElement, typ: String, params: Params) -> Result<(), JsValue> {
         match GraphType::from_string(typ) {
@@ -129,11 +129,11 @@ impl Model {
     }
 }
 
-#[wasm_bindgen(js_class = DDS_LBDM_Params)]
+#[wasm_bindgen(js_class = DDS_LBMM_Params)]
 impl Params {
     pub fn builder() -> Self {
         Self { max_time: 1f32, initial_population: 1f32,
-            birth_rate: 1f32, death_rate: 0.1f32, max_population_display: 0f32 }
+            birth_death_rate: 1f32, migration_coefficient: 0f32, max_population_display: 0f32 }
     }
 
     pub fn max_time(mut self, max_time: f32) -> Self {
@@ -146,13 +146,13 @@ impl Params {
         self
     }
 
-    pub fn birth_rate(mut self, birth_rate: f32) -> Self {
-        self.birth_rate = birth_rate;
+    pub fn birth_death_rate(mut self, birth_death_rate: f32) -> Self {
+        self.birth_death_rate = birth_death_rate;
         self
     }
 
-    pub fn death_rate(mut self, death_rate: f32) -> Self {
-        self.death_rate = death_rate;
+    pub fn migration_coefficient(mut self, migration_coefficient: f32) -> Self {
+        self.migration_coefficient = migration_coefficient;
         self
     }
 
@@ -162,23 +162,27 @@ impl Params {
     }
 
     fn predict_max_population_size(&self) -> f32 {
-        let rate = self.birth_rate - self.death_rate;
-        if rate > 1f32 {
-            f32::powf(rate, self.max_time) * self.initial_population
+        if self.birth_death_rate > 1f32 {
+            f32::powf(self.birth_death_rate, self.max_time) * self.initial_population +
+                (0..self.max_time as u32).into_iter()
+                .map(|i| f32::powf(self.birth_death_rate, i as f32) * self.migration_coefficient).sum::<f32>()
+        } else if self.birth_death_rate == 1f32 {
+            self.initial_population + self.max_time * self.migration_coefficient
         } else {
-            self.initial_population
+            //migration equilibrium value
+            let equilibrium = self.migration_coefficient / (1f32 - self.birth_death_rate);
+
+            f32::max(equilibrium, self.initial_population)
         }
     }
-    
-    fn to_model(self) -> LinearBirthModel {
-        let birth_rate = self.birth_rate - self.death_rate;
 
+    fn to_model(self) -> LinearBirthModel {
         LinearBirthModel::new(
             self.initial_population,
-            birth_rate,
-            0f32, //no migration
+            self.birth_death_rate,
+            self.migration_coefficient,
             1f32,
-            200f32
+            200f32,
         )
     }
 }

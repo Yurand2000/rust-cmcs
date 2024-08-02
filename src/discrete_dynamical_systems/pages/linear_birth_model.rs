@@ -39,7 +39,7 @@ impl Model {
 
         let max_population_display =
             if params.max_population_display == 0f32 {
-                params.predict_max_population_size()
+                params.predict_max_population_size() * 2f32
             } else {
                 params.max_population_display
             } as u32;
@@ -79,7 +79,7 @@ impl Model {
 
         let max_population_display =
             if params.max_population_display == 0f32 {
-                params.predict_max_population_size()
+                params.predict_max_population_size() * 1.5f32
             } else {
                 params.max_population_display
             };
