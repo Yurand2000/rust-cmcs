@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<title>Male-Female Fish Population</title>        
+	</head>
+    <body>
+        <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+        <script>
+            init();
+
+            async function init() {
+                const [{DDS_SLE_MFFP, DDS_SLE_MFFP_Params, default: init}, {main, setup}] = await Promise.all([
+                    import("/release/wasm_demo.js"),
+                    import("./index.js"),
+                ]);
+
+                await init();
+                setup(DDS_SLE_MFFP, DDS_SLE_MFFP_Params);
+                main();
+            }
+        </script>
+        <div class="flex bg-gray-200 items-center flex-col rounded-lg shadow m-8">
+            <div class="flex items-center flex-col mb-4 mt-4 bg-white rounded-lg shadow m-4">
+                <h1 class="mt-4 text-5xl font-extrabold leading-none text-gray-900">
+                    Systems of Recurrence Equations</br>Male-Female Fish Population
+                </h1>
+                <p class="mt-4 ml-4 mr-4 text-xl font-normal">
+                    F(t+1) = r * F(t) * (1 - N(t)/K)</br>
+                    M(t+1) = r * F(t) * (1 - N(t)/K) - s * M(t)</br>
+                    N(t+1) = F(t+1) + M(t+1)
+                </p>
+                <p class="ml-4 mr-4 text-l font-normal">
+                    where r > 0 is the birth/death rate, s ≥ 0 is the male death rate due to figts,</br>
+                    K ≥ 0 is the carrying capacity
+                </p>
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                    Loading...
+                </p>
+                <canvas class="m-2" id="canvas" width="600" height="400"></canvas>
+                <div class="flex items-left flex-row m-4">
+                    <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">
+                        <label for="init_female_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Female Population</label>
+                        <input id="init_female_pop" type="range" min="1" max="100" value="16" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="init_male_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Male Population</label>
+                        <input id="init_male_pop" type="range" min="1" max="100" value="23" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="max_time" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Max Simulation Time</label>
+                        <input id="max_time" type="range" min="10" max="100" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </ul>
+                    <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">    
+                        <label for="birth_rate" class="block mb-2 text-sm font-medium text-gray-900">Birth Rate</label>
+                        <input id="birth_rate" type="range" min="0.1" max="5" value="1.3" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="male_death_rate" class="block mb-2 text-sm font-medium text-gray-900">Male Fighting Death Rate</label>
+                        <input id="male_death_rate" type="range" min="0" max="1" value="0.5" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="carrying_cap" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Carrying Capacity</label>
+                        <input id="carrying_cap" type="range" min="0" max="500" value="200" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </ul>
+                </div>
+                <p id="status" class="mb-6 font-normal text-gray-500 sm:px-16 xl:px-48">
+                    Loading WebAssembly...
+                </p>
+            </div>
+        </div>
+        <footer class="bg-gray-200 rounded-lg shadow m-8">
+            <div class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
+            <span class="text-sm text-gray-800 sm:text-center">
+                Yuri Andriaccio (yurand2000@gmail.com)
+            </span>
+            <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-800 sm:mt-0">
+                <li>
+                    <a href="/" class="hover:underline me-4 md:me-6">Home</a>
+                </li>
+            </ul>
+            </div>
+        </footer>
+    </body>
+</html>
