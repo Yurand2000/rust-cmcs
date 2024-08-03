@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<title>Lotka-Volterra Predator-Prey</title>        
+	</head>
+    <body>
+        <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+        <script>
+            init();
+
+            async function init() {
+                const [{CDS_SLE_LV, CDS_SLE_LV_Params, default: init}, {main, setup}] = await Promise.all([
+                    import("/release/wasm_demo.js"),
+                    import("./index.js"),
+                ]);
+
+                await init();
+                setup(CDS_SLE_LV, CDS_SLE_LV_Params);
+                main();
+            }
+        </script>
+        <div class="flex bg-gray-200 items-center flex-col rounded-lg shadow m-8">
+            <div class="flex items-center flex-col mb-4 mt-4 bg-white rounded-lg shadow m-4">
+                <h1 class="mt-4 text-5xl font-extrabold leading-none text-gray-900">
+                    Systems of Recurrence Equations</br>Lotka-Volterra Predator-Prey
+                </h1>
+                <p class="mt-4 ml-4 mr-4 text-xl font-normal">
+                    dV/dt = rV - aVP</br>
+                    dP/dt = -sP + abVP</br>
+                </p>
+                <p class="ml-4 mr-4 text-l font-normal">
+                    where r > 0 is the birth rate of preys, r > 0 is the death rate of predators,</br>
+                    1 ≥ a ≥ 0 is the proportion of meetings resulting in a hunt, and b > 0 is the number of predator offsprings per hunt.
+                </p>
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                    Loading...
+                </p>
+                <canvas class="m-2" id="canvas" width="600" height="400"></canvas>
+                <label for="solver" class="block mb-2 text-sm font-medium text-gray-900">ODE Solver: </label>
+                <select id="solver" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5:ring-blue-500:border-blue-500">
+                    <option value="rk4">Explicit Runge-Kutta method of order 4 with fixed step size</option>
+                    <option value="dop853">Explicit Runge-Kutta method with Dormand-Prince coefficients of order 8(5,3) and dense output of order 7</option>
+                    <option value="dopri5">Explicit Runge-Kutta method with Dormand-Prince coefficients of order 5(4) and dense output of order 4</option>
+                </select>
+                <div class="flex items-left flex-row m-4">
+                    <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">
+                        <label for="init_prey_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Prey Population</label>
+                        <input id="init_prey_pop" type="range" min="1" max="2000" value="800" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="init_predattor_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Predator Population</label>
+                        <input id="init_predator_pop" type="range" min="1" max="2000" value="600" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="max_time" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Max Simulation Time</label>
+                        <input id="max_time" type="range" min="5" max="20" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </ul>
+                    <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">    
+                        <label for="prey_birth_rate" class="block mb-2 text-sm font-medium text-gray-900">Prey Birth Rate</label>
+                        <input id="prey_birth_rate" type="range" min="1" max="20" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="predator_death_rate" class="block mb-2 text-sm font-medium text-gray-900">Predator Death Rate</label>
+                        <input id="predator_death_rate" type="range" min="1" max="20" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="hunting_meetings" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Meetings resulting in Hunting Rate</label>
+                        <input id="hunting_meetings" type="range" min="0" max="1" value="0.01" step="0.01" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="hunt_offsprings" class="block mb-2 text-sm font-medium text-gray-900">Offsprings per Hunt</label>
+                        <input id="hunt_offsprings" type="range" min="1" max="10" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </ul>
+                </div>
+                <p id="status" class="mb-6 font-normal text-gray-500 sm:px-16 xl:px-48">
+                    Loading WebAssembly...
+                </p>
+            </div>
+        </div>
+        <footer class="bg-gray-200 rounded-lg shadow m-8">
+            <div class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
+            <span class="text-sm text-gray-800 sm:text-center">
+                Yuri Andriaccio (yurand2000@gmail.com)
+            </span>
+            <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-800 sm:mt-0">
+                <li>
+                    <a href="/" class="hover:underline me-4 md:me-6">Home</a>
+                </li>
+            </ul>
+            </div>
+        </footer>
+    </body>
+</html>

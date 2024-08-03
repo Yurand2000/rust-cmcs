@@ -3,6 +3,7 @@ mod pages {
     mod radioactive_decay;
     mod logistic_equation;
     mod male_female_fish_population;
+    mod lotka_volterra;
 }
 
 mod prelude {
@@ -15,6 +16,7 @@ mod prelude {
 mod linear_birth_model;
 mod logistic_equation;
 mod male_female_fish_population;
+mod lotka_volterra;
 
 #[derive(Clone, Copy)]
 pub enum ODESolver {
