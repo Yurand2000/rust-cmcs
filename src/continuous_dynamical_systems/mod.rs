@@ -4,12 +4,15 @@ mod pages {
     mod logistic_equation;
     mod male_female_fish_population;
     mod lotka_volterra;
+    mod sir_model;
 }
 
 mod prelude {
     pub use super::linear_birth_model::*;
     pub use super::logistic_equation::*;
     pub use super::male_female_fish_population::*;
+    pub use super::lotka_volterra::*;
+    pub use super::sir_model::*;
     pub use super::ODESolver;
 }
 
@@ -17,6 +20,7 @@ mod linear_birth_model;
 mod logistic_equation;
 mod male_female_fish_population;
 mod lotka_volterra;
+mod sir_model;
 
 #[derive(Clone, Copy)]
 pub enum ODESolver {

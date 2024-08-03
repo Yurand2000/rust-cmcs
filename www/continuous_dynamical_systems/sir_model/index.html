@@ -7,7 +7,7 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
 		<script src="https://cdn.tailwindcss.com"></script>
-		<title>Male-Female Fish Population</title>        
+		<title>SIR Model</title>        
 	</head>
     <body>
         <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
@@ -15,28 +15,28 @@
             init();
 
             async function init() {
-                const [{CDS_SLE_MFFP, CDS_SLE_MFFP_Params, default: init}, {main, setup}] = await Promise.all([
+                const [{CDS_SLE_SIR, CDS_SLE_SIR_Params, default: init}, {main, setup}] = await Promise.all([
                     import("/release/wasm_demo.js"),
                     import("./index.js"),
                 ]);
 
                 await init();
-                setup(CDS_SLE_MFFP, CDS_SLE_MFFP_Params);
+                setup(CDS_SLE_SIR, CDS_SLE_SIR_Params);
                 main();
             }
         </script>
         <div class="flex bg-gray-200 items-center flex-col rounded-lg shadow m-8">
             <div class="flex items-center flex-col mb-4 mt-4 bg-white rounded-lg shadow m-4">
                 <h1 class="mt-4 text-5xl font-extrabold leading-none text-gray-900">
-                    Male-Female Fish Population
+                    SIR Model
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    dF/dt = r * F(t) * (1 - (F(t)+M(t))/K)</br>
-                    dM/dt = r * F(t) * (1 - (F(t)+M(t))/K) - s * M(t)</br>
+                    dS/dt = -βSI</br>
+                    dI/dt = βSI - γI</br>
+                    dR/dt = γI
                 </p>
                 <p class="ml-4 mr-4 text-l font-normal">
-                    where r > 0 is the birth/death rate, s ≥ 0 is the male death rate due to figts,</br>
-                    K ≥ 0 is the carrying capacity
+                    where β is the infection coefficient and γ is the recovery coefficient
                 </p>
                 <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
                     Loading...
@@ -50,20 +50,20 @@
                 </select>
                 <div class="flex items-left flex-row m-4">
                     <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">
-                        <label for="init_female_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Female Population</label>
-                        <input id="init_female_pop" type="range" min="1" max="100" value="16" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                        <label for="init_male_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Male Population</label>
-                        <input id="init_male_pop" type="range" min="1" max="100" value="23" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                        <label for="max_time" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Max Simulation Time</label>
-                        <input id="max_time" type="range" min="10" max="100" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="init_susceptible_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Susceptible Population</label>
+                        <input id="init_susceptible_pop" type="range" min="0" max="1" value="0.99" step="0.01" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="init_infected_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Infected Population</label>
+                        <input id="init_infected_pop" type="range" min="0" max="1" value="0.01" step="0.01" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="init_recovered_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Recovered Population</label>
+                        <input id="init_recovered_pop" type="range" min="0" max="1" value="0" step="0.01" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                     </ul>
                     <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">    
-                        <label for="birth_rate" class="block mb-2 text-sm font-medium text-gray-900">Birth Rate</label>
-                        <input id="birth_rate" type="range" min="0.1" max="5" value="1.3" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                        <label for="male_death_rate" class="block mb-2 text-sm font-medium text-gray-900">Male Fighting Death Rate</label>
-                        <input id="male_death_rate" type="range" min="0" max="1" value="0.5" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                        <label for="carrying_cap" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Carrying Capacity</label>
-                        <input id="carrying_cap" type="range" min="0" max="500" value="200" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="infection_coefficient" class="block mb-2 text-sm font-medium text-gray-900">Infection Coefficient</label>
+                        <input id="infection_coefficient" type="range" min="0" max="5" value="3" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="recovery_coefficient" class="block mb-2 text-sm font-medium text-gray-900">Recovery Coefficient</label>
+                        <input id="recovery_coefficient" type="range" min="0" max="5" value="1" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="max_time" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Max Simulation Time</label>
+                        <input id="max_time" type="range" min="5" max="20" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                     </ul>
                 </div>
                 <p id="status" class="mb-6 font-normal text-gray-500 sm:px-16 xl:px-48">

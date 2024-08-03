@@ -2,7 +2,6 @@ use plotters::prelude::*;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 
-use crate::continuous_dynamical_systems::lotka_volterra::LotkaVolterra;
 use crate::prelude::*;
 use crate::continuous_dynamical_systems::prelude::*;
 
