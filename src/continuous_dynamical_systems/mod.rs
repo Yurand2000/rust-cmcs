@@ -6,6 +6,7 @@ mod pages {
     mod lotka_volterra;
     mod sir_model;
     mod sir_model_birth_deaths;
+    mod sir_model_vaccination;
 }
 
 mod prelude {
