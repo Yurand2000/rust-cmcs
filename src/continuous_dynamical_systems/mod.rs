@@ -5,6 +5,7 @@ mod pages {
     mod male_female_fish_population;
     mod lotka_volterra;
     mod sir_model;
+    mod sir_model_birth_deaths;
 }
 
 mod prelude {
