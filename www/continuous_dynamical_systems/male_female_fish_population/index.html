@@ -31,9 +31,8 @@
                     Systems of Recurrence Equations</br>Male-Female Fish Population
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    F(t+1) = r * F(t) * (1 - N(t)/K)</br>
-                    M(t+1) = r * F(t) * (1 - N(t)/K) - s * M(t)</br>
-                    N(t+1) = F(t+1) + M(t+1)
+                    dF/dt = r * F(t) * (1 - (F(t)+M(t))/K)</br>
+                    dM/dt = r * F(t) * (1 - (F(t)+M(t))/K) - s * M(t)</br>
                 </p>
                 <p class="ml-4 mr-4 text-l font-normal">
                     where r > 0 is the birth/death rate, s ≥ 0 is the male death rate due to figts,</br>
