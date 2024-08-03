@@ -5,19 +5,18 @@ use web_sys::HtmlCanvasElement;
 use crate::prelude::*;
 use crate::continuous_dynamical_systems::prelude::*;
 
-#[wasm_bindgen(js_name = CDS_LBM)]
+#[wasm_bindgen(js_name = CDS_RD)]
 pub struct Model { }
 
-#[wasm_bindgen(js_name = CDS_LBM_Params)]
+#[wasm_bindgen(js_name = CDS_RD_Params)]
 pub struct Params {
     max_time: f32,
     initial_population: f32,
-    offsprings_per_individual: f32,
-    reproduction_period: f32,
+    decay_rate: f32,
     max_population_display: f32,
 }
 
-#[wasm_bindgen(js_class = CDS_LBM)]
+#[wasm_bindgen(js_class = CDS_RD)]
 impl Model {
     pub fn draw(canvas: HtmlCanvasElement, params: Params) -> Result<(), JsValue> {
         draw_generic(Self::draw_function)(canvas, params)
@@ -66,11 +65,11 @@ impl Model {
     }
 }
 
-#[wasm_bindgen(js_class = CDS_LBM_Params)]
+#[wasm_bindgen(js_class = CDS_RD_Params)]
 impl Params {
     pub fn builder() -> Self {
         Self { max_time: 1f32, initial_population: 1f32,
-            offsprings_per_individual: 1f32, reproduction_period: 1f32, max_population_display: 0f32 }
+            decay_rate: 1f32, max_population_display: 0f32 }
     }
 
     pub fn max_time(mut self, max_time: f32) -> Self {
@@ -83,13 +82,8 @@ impl Params {
         self
     }
 
-    pub fn offsprings_per_individual(mut self, offsprings_per_individual: f32) -> Self {
-        self.offsprings_per_individual = offsprings_per_individual;
-        self
-    }
-
-    pub fn reproduction_period(mut self, reproduction_period: f32) -> Self {
-        self.reproduction_period = reproduction_period;
+    pub fn decay_rate(mut self, decay_rate: f32) -> Self {
+        self.decay_rate = decay_rate;
         self
     }
 
@@ -99,16 +93,13 @@ impl Params {
     }
 
     fn predict_max_population_size(&self) -> f32 {
-        let rate = self.offsprings_per_individual / self.reproduction_period;
-        self.initial_population * f32::exp(rate * self.max_time)
+        self.initial_population
     }
 
     fn to_model(self) -> LinearBirthModel {
-        let birth_rate = self.offsprings_per_individual / self.reproduction_period;
-
         LinearBirthModel::new(
             self.initial_population,
-            birth_rate,
+            - self.decay_rate,
         )
     }
 }
