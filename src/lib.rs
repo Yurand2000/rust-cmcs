@@ -3,6 +3,7 @@ pub mod prelude {
 }
 
 pub mod discrete_dynamical_systems;
+pub mod continuous_dynamical_systems;
 pub mod utils;
 
 // WASM specific allocator
