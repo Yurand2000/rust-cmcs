@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use ode_solvers::*;
 use crate::chemical_reactions::prelude::*;
+use crate::continuous_dynamical_systems::ODESolver;
 
 #[derive(Clone)]
 pub struct ChemicalReactionODE {
@@ -55,14 +56,30 @@ pub struct ODESimulation {
 }
 
 impl ODESimulation {
-    pub fn new(reactions: Vec<Reaction>, initial_state: &HashMap<Molecule, u32>, max_time: f32) -> Result<Self, String> {
+    pub fn new(reactions: Vec<Reaction>, initial_state: HashMap<Molecule, u32>, solver: ODESolver, max_time: f32) -> Result<Self, String> {
         let step_size = 0.01f32;
         let ode = ChemicalReactionODE::new(reactions);
-        let initial_state = Self::initial_state_to_vector(&ode, initial_state);
-        let mut stepper = Dop853::new(ode.clone(), 0f32, max_time, step_size, initial_state, 1.0e-2, 1.0e-6);
-        stepper.integrate().map_err(|err| err.to_string())?;
+        let initial_state = Self::initial_state_to_vector(&ode, &initial_state);
 
-        let data = stepper.results().to_owned();
+        let data =
+            match solver {
+                ODESolver::DOP853 => {
+                    let mut stepper = Dop853::new(ode.clone(), 0f32, max_time, step_size, initial_state, 1.0e-2, 1.0e-6);
+                    stepper.integrate().map_err(|err| err.to_string())?;
+                    stepper.results().to_owned()
+                },
+                ODESolver::DOPRI5 => {
+                    let mut stepper = Dopri5::new(ode.clone(), 0f32, max_time, step_size, initial_state, 1.0e-2, 1.0e-6);
+                    stepper.integrate().map_err(|err| err.to_string())?;
+                    stepper.results().to_owned()
+                },
+                ODESolver::RK4 => {
+                    let mut stepper = Rk4::new(ode.clone(), 0f32, initial_state, max_time, step_size);
+                    stepper.integrate().map_err(|err| err.to_string())?;
+                    stepper.results().to_owned()
+                },
+            };
+
         let (time, molecules) = data.get();
         let data = time.iter().cloned()
             .zip(
