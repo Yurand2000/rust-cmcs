@@ -115,8 +115,6 @@ impl ode_solvers::System<f32, ode_solvers::DVector<f32>> for ChemicalReactionODE
     }
 }
 
-use nalgebra::*;
-
 #[derive(Clone)]
 pub struct ODESimulation {
     data: Vec<(f32, Vec<(Molecule, f32)>)>
