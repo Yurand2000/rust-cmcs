@@ -4,6 +4,7 @@ pub mod prelude {
 
 pub mod discrete_dynamical_systems;
 pub mod continuous_dynamical_systems;
+pub mod chemical_reactions;
 pub mod stochastic_simulation;
 pub mod utils;
 
