@@ -25,9 +25,11 @@ mod lotka_volterra;
 mod sir_model;
 
 #[derive(Clone, Copy)]
+#[derive(Default)]
 pub enum ODESolver {
     DOP853,
     DOPRI5,
+    #[default]
     RK4
 }
 

@@ -1,8 +1,6 @@
 use wasm_bindgen::prelude::*;
 
 pub mod prelude {
-    pub use super::simulation_limits::prelude::*;
-    pub use super::phase_graph::prelude::*;
     pub use super::{
         GraphType,
         MyDrawResult,
@@ -82,23 +80,27 @@ pub fn draw_generic<F, T, Params>(fun: F) -> impl Fn(web_sys::HtmlCanvasElement,
 
 #[derive(Clone)]
 pub struct Simulation<T, X, Y>
-    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd + Clone, Y: PartialOrd + Clone
+    where T: Iterator<Item = (X, Y)> + Clone, X: Clone, Y: Clone
 {
     simulation: T
 }
 
 impl<T, X, Y> Simulation<T, X, Y>
-    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd + Clone, Y: PartialOrd + Clone
+    where T: Iterator<Item = (X, Y)> + Clone, X: Clone, Y: Clone
 {
     pub fn new(simulation: T) -> Self {
         Self { simulation }
     }
 
-    pub fn phase_graph_slope(self) -> Simulation<PhaseGraphSlope<T, X, Y>, Y, Y> {
+    pub fn phase_graph_slope(self) -> Simulation<PhaseGraphSlope<T, X, Y>, Y, Y>
+        where X: PartialOrd, Y: PartialOrd
+    {
         Simulation { simulation: PhaseGraphSlope::wrap(self.simulation) }
     }
 
-    pub fn phase_graph_lines(self) -> Simulation<PhaseGraphLines<T, X, Y>, Y, Y> {
+    pub fn phase_graph_lines(self) -> Simulation<PhaseGraphLines<T, X, Y>, Y, Y>
+        where X: PartialOrd, Y: PartialOrd
+    {
         Simulation { simulation: PhaseGraphLines::wrap(self.simulation) }
     }
 
@@ -106,7 +108,9 @@ impl<T, X, Y> Simulation<T, X, Y>
         Simulation { simulation: MaxStepSimulation::wrap(self.simulation, steps) }
     }
 
-    pub fn time_limit(self, max_time: X) -> Simulation<LimitedSimulation<T, X, Y>, X, Y> {
+    pub fn time_limit(self, max_time: X) -> Simulation<LimitedSimulation<T, X, Y>, X, Y>
+        where X: PartialOrd
+    {
         Simulation { simulation: LimitedSimulation::wrap(self.simulation, max_time) }
     }
 
@@ -119,7 +123,7 @@ impl<T, X, Y> Simulation<T, X, Y>
 }
 
 impl<T, X, Y> Iterator for Simulation<T, X, Y>
-    where T: Iterator<Item = (X, Y)> + Clone, X: PartialOrd + Clone, Y: PartialOrd + Clone
+    where T: Iterator<Item = (X, Y)> + Clone, X: Clone, Y: Clone
 {
     type Item = (X, Y);
 
