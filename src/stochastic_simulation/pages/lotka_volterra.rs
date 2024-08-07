@@ -7,23 +7,24 @@ use crate::continuous_dynamical_systems::ODESolver;
 use crate::chemical_reactions::prelude::*;
 use crate::stochastic_simulation::prelude::*;
 
-#[wasm_bindgen(js_name = SSA_EA)]
+#[wasm_bindgen(js_name = SSA_LV)]
 pub struct Model { }
 
-#[wasm_bindgen(js_name = SSA_EA_Params)]
+#[wasm_bindgen(js_name = SSA_LV_Params)]
 #[derive(Default)]
 pub struct Params {
     solver: ODESolver,
     max_time: f32,
-    initial_enzyme: u32,
-    initial_reactant: u32,
-    binding_rate: f32,
-    unbinding_rate: f32,
-    catalysis_rate: f32,
+    initial_prey_pop: u32,
+    initial_predator_pop: u32,
+    prey_birth_rate: f32,
+    predator_death_rate: f32,
+    hunting_meetings: f32,
+    hunt_offsprings: u32,
     seed: u64,
 }
 
-#[wasm_bindgen(js_class = SSA_EA)]
+#[wasm_bindgen(js_class = SSA_LV)]
 impl Model {
     pub fn draw(canvas: HtmlCanvasElement, algorithm: String, params: Params) -> Result<(), JsValue> {
         match algorithm.as_str() {
@@ -35,8 +36,19 @@ impl Model {
 
     fn draw_ode(canvas: HtmlCanvasElement, params: Params) -> MyDrawResult<()> {
         let max_time = params.max_time;
-        let max_population_display = params.initial_reactant as f32;
         let model = params.to_ode_model();
+
+        let simulation = model.into_iter();
+        let simulation = Simulation::new(simulation)
+            .time_limit(max_time);
+
+        let (prey, predator) = LotkaVolterra::species();
+
+        let max_population_display = simulation.clone()
+            .map(|(_, data)| data.iter()
+                .map(|(_, q)| (*q) as f32).reduce(f32::max).unwrap_or(0f32)
+            )
+            .reduce(f32::max).unwrap_or(0f32) * 1.5f32;
 
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
@@ -57,43 +69,26 @@ impl Model {
             .y_labels(10)
             .draw()?;
 
-        let simulation = model.into_iter();
-        let simulation = Simulation::new(simulation)
-            .time_limit(chart.x_range().end);
-
-        let (_, reactant, bound_reactant, product) = EnzymaticActivity::species();
-
-        // reactant quantity
+        // prey quantity
         chart.draw_series(LineSeries::new(
             simulation.clone().simulation_map(|(x, pops)| {
                 let quantity = pops.iter()
-                    .find(|(mol, _)| mol == &reactant).unwrap().1;
-
-                (x, quantity)
-            }),
-            &GREEN
-        ))?;
-
-        // product quantity
-        chart.draw_series(LineSeries::new(
-            simulation.clone().simulation_map(|(x, pops)| {
-                let quantity = pops.iter()
-                    .find(|(mol, _)| mol == &product).unwrap().1;
-
-                (x, quantity)
-            }),
-            &BLUE
-        ))?;
-
-        // bound reactant quantity
-        chart.draw_series(LineSeries::new(
-            simulation.clone().simulation_map(|(x, pops)| {
-                let quantity = pops.iter()
-                    .find(|(mol, _)| mol == &bound_reactant).unwrap().1;
+                    .find(|(mol, _)| mol == &prey).unwrap().1;
 
                 (x, quantity)
             }),
             &RED
+        ))?;
+
+        // predator quantity
+        chart.draw_series(LineSeries::new(
+            simulation.clone().simulation_map(|(x, pops)| {
+                let quantity = pops.iter()
+                    .find(|(mol, _)| mol == &predator).unwrap().1;
+
+                (x, quantity)
+            }),
+            &BLUE
         ))?;
     
         Ok(())
@@ -101,8 +96,19 @@ impl Model {
 
     fn draw_ssa(canvas: HtmlCanvasElement, params: Params) -> MyDrawResult<()> {
         let max_time = params.max_time;
-        let max_population_display = params.initial_reactant;
         let model = params.to_ssa_model();
+
+        let simulation = Simulation::new(model)
+            .fix_point(max_time + 1f32)
+            .time_limit(max_time);
+
+        let (prey, predator) = LotkaVolterra::species();
+
+        let max_population_display = (simulation.clone()
+            .map(|(_, data)| data.iter()
+                .map(|(_, q)| (*q) as f32).reduce(f32::max).unwrap_or(0f32)
+            )
+            .reduce(f32::max).unwrap_or(0f32) * 1.5f32) as u32;
 
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
@@ -123,50 +129,33 @@ impl Model {
             .y_labels(10)
             .draw()?;
 
-        let simulation = Simulation::new(model)
-            .fix_point(max_time + 1f32)
-            .time_limit(max_time);
-
-        let (_, reactant, bound_reactant, product) = EnzymaticActivity::species();
-
-        // reactant quantity
+        // prey quantity
         chart.draw_series(LineSeries::new(
             simulation.clone().simulation_map(|(x, pops)| {
                 let quantity = pops.iter()
-                    .find(|(mol, _)| mol == &reactant).unwrap().1;
-
-                (x, quantity)
-            }),
-            &GREEN
-        ))?;
-
-        // product quantity
-        chart.draw_series(LineSeries::new(
-            simulation.clone().simulation_map(|(x, pops)| {
-                let quantity = pops.iter()
-                    .find(|(mol, _)| mol == &product).unwrap().1;
-
-                (x, quantity)
-            }),
-            &BLUE
-        ))?;
-
-        // bound reactant quantity
-        chart.draw_series(LineSeries::new(
-            simulation.clone().simulation_map(|(x, pops)| {
-                let quantity = pops.iter()
-                    .find(|(mol, _)| mol == &bound_reactant).unwrap().1;
+                    .find(|(mol, _)| mol == &prey).unwrap().1;
 
                 (x, quantity)
             }),
             &RED
+        ))?;
+
+        // predator quantity
+        chart.draw_series(LineSeries::new(
+            simulation.clone().simulation_map(|(x, pops)| {
+                let quantity = pops.iter()
+                    .find(|(mol, _)| mol == &predator).unwrap().1;
+
+                (x, quantity)
+            }),
+            &BLUE
         ))?;
     
         Ok(())
     }
 }
 
-#[wasm_bindgen(js_class = SSA_EA_Params)]
+#[wasm_bindgen(js_class = SSA_LV_Params)]
 impl Params {
     pub fn builder() -> Self { Default::default() }
 
@@ -180,28 +169,33 @@ impl Params {
         self
     }
 
-    pub fn initial_enzyme(mut self, initial_enzyme: u32) -> Self {
-        self.initial_enzyme = initial_enzyme;
+    pub fn initial_prey_population(mut self, initial_prey_pop: u32) -> Self {
+        self.initial_prey_pop = initial_prey_pop;
+        self
+    }
+    
+    pub fn initial_predator_population(mut self, initial_predator_pop: u32) -> Self {
+        self.initial_predator_pop = initial_predator_pop;
         self
     }
 
-    pub fn initial_reactant(mut self, initial_reactant: u32) -> Self {
-        self.initial_reactant = initial_reactant;
+    pub fn prey_birth_rate(mut self, prey_birth_rate: f32) -> Self {
+        self.prey_birth_rate = prey_birth_rate;
         self
     }
 
-    pub fn binding_rate(mut self, binding_rate: f32) -> Self {
-        self.binding_rate = binding_rate;
+    pub fn predator_death_rate(mut self, predator_death_rate: f32) -> Self {
+        self.predator_death_rate = predator_death_rate;
         self
     }
 
-    pub fn unbinding_rate(mut self, unbinding_rate: f32) -> Self {
-        self.unbinding_rate = unbinding_rate;
+    pub fn hunting_meetings(mut self, hunting_meetings: f32) -> Self {
+        self.hunting_meetings = hunting_meetings;
         self
     }
 
-    pub fn catalysis_rate(mut self, catalysis_rate: f32) -> Self {
-        self.catalysis_rate = catalysis_rate;
+    pub fn hunt_offsprings(mut self, hunt_offsprings: u32) -> Self {
+        self.hunt_offsprings = hunt_offsprings;
         self
     }
 
@@ -211,24 +205,26 @@ impl Params {
     }
 
     fn to_ode_model(self) -> ODESimulation {
-        EnzymaticActivity::make_ode(
-            self.initial_enzyme,
-            self.initial_reactant,
-            self.binding_rate,
-            self.unbinding_rate,
-            self.catalysis_rate,
+        LotkaVolterra::make_ode(
+            self.initial_prey_pop,
+            self.initial_predator_pop,
+            self.prey_birth_rate,
+            self.predator_death_rate,
+            self.hunting_meetings,
+            self.hunt_offsprings,
             self.solver,
             self.max_time
         )
     }
 
     fn to_ssa_model(self) -> StochasticSimulation {
-        EnzymaticActivity::make_ssa(
-            self.initial_enzyme,
-            self.initial_reactant,
-            self.binding_rate,
-            self.unbinding_rate,
-            self.catalysis_rate,
+        LotkaVolterra::make_ssa(
+            self.initial_prey_pop,
+            self.initial_predator_pop,
+            self.prey_birth_rate,
+            self.predator_death_rate,
+            self.hunting_meetings,
+            self.hunt_offsprings,
             self.seed,
         )
     }

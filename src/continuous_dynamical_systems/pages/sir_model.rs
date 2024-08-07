@@ -79,19 +79,19 @@ impl Model {
 
         // susceptible population
         chart.draw_series(LineSeries::new(
-            simulation.clone().map(|(x, pops)| (x, pops.0)),
+            simulation.clone().simulation_map(|(x, pops)| (x, pops.0)),
             &GREEN
         ))?;
 
         // infected population
         chart.draw_series(LineSeries::new(
-            simulation.clone().map(|(x, pops)| (x, pops.1)),
+            simulation.clone().simulation_map(|(x, pops)| (x, pops.1)),
             &RED
         ))?;
 
         // recovered population
         chart.draw_series(LineSeries::new(
-            simulation.clone().map(|(x, pops)| (x, pops.2)),
+            simulation.clone().simulation_map(|(x, pops)| (x, pops.2)),
             &BLUE
         ))?;
     

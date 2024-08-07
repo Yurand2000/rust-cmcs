@@ -61,7 +61,7 @@ impl Model {
         let model = params.to_model();
 
         let simulation = Simulation::new(model)
-            .map(|(x, y)| (x, y as u32))
+            .simulation_map(|(x, y)| (x, y as u32))
             .time_limit(chart.x_range().end);
 
         chart.draw_series(LineSeries::new(

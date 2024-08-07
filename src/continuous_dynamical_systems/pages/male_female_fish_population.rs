@@ -86,19 +86,19 @@ impl Model {
 
         // female population
         chart.draw_series(LineSeries::new(
-            simulation.clone().map(|(x, pops)| (x, pops.0 as u32)),
+            simulation.clone().simulation_map(|(x, pops)| (x, pops.0 as u32)),
             &BLUE
         ))?;
 
         // male population
         chart.draw_series(LineSeries::new(
-            simulation.clone().map(|(x, pops)| (x, pops.1 as u32)),
+            simulation.clone().simulation_map(|(x, pops)| (x, pops.1 as u32)),
             &RED
         ))?;
 
         // total population
         chart.draw_series(LineSeries::new(
-            simulation.clone().map(|(x, pops)| (x, (pops.0 + pops.1) as u32)),
+            simulation.clone().simulation_map(|(x, pops)| (x, (pops.0 + pops.1) as u32)),
             &GREEN
         ))?;
     

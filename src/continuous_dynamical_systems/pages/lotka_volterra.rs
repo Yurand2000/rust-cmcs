@@ -85,13 +85,13 @@ impl Model {
 
         // prey population
         chart.draw_series(LineSeries::new(
-            simulation.clone().map(|(x, pops)| (x, pops.0 as u32)),
+            simulation.clone().simulation_map(|(x, pops)| (x, pops.0 as u32)),
             &BLUE
         ))?;
 
         // predator population
         chart.draw_series(LineSeries::new(
-            simulation.clone().map(|(x, pops)| (x, pops.1 as u32)),
+            simulation.clone().simulation_map(|(x, pops)| (x, pops.1 as u32)),
             &RED
         ))?;
     

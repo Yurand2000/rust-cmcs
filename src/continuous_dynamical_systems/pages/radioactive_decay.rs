@@ -53,7 +53,7 @@ impl Model {
         let birth_model = params.to_model();
 
         let simulation = Simulation::new(birth_model)
-            .map(|(x, y)| (x, y as u32))
+            .simulation_map(|(x, y)| (x, y as u32))
             .time_limit(chart.x_range().end);
 
         chart.draw_series(LineSeries::new(
