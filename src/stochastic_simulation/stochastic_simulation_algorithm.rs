@@ -9,6 +9,7 @@ pub struct StochasticSimulation {
     rng: rand::rngs::SmallRng,
 
     state: Option<(f32, HashMap<Molecule, u32>)>,
+    fix_point: bool,
 }
 
 impl StochasticSimulation {
@@ -28,6 +29,7 @@ impl StochasticSimulation {
             initial_state,
             rng: rand::rngs::SmallRng::seed_from_u64(seed),
             state: None,
+            fix_point: false,
         }
     }
 }
@@ -36,6 +38,10 @@ impl Iterator for StochasticSimulation {
     type Item = (f32, Vec<(Molecule, u32)>);
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.fix_point {
+            return None;
+        }
+
         let state = std::mem::replace(&mut self.state, None);
         match state {
             Some((time, state)) => {
@@ -44,6 +50,12 @@ impl Iterator for StochasticSimulation {
                     .map(|reaction| reaction.get_propensity(&state)).collect();
 
                 let propensities_sum: f32 = propensities.iter().sum();
+
+                if propensities_sum == 0f32 {
+                    // no reaction can be applied
+                    self.fix_point = true;
+                    return None;
+                }
 
                 // compute delta time
                 let distribution = rand_distr::Exp::new(propensities_sum).unwrap();
@@ -64,7 +76,7 @@ impl Iterator for StochasticSimulation {
                     .zip(self.reactions.iter())
                     .find_map(|(value, reaction)| if value > chosen_reaction_value { Some(reaction) } else { None })
                     .unwrap();
-                
+
                 // apply reaction
                 let mut new_state = state;
 

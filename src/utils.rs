@@ -114,6 +114,11 @@ impl<T, X, Y> Simulation<T, X, Y>
         Simulation { simulation: LimitedSimulation::wrap(self.simulation, max_time) }
     }
 
+    pub fn fix_point(self, max_time: X) -> Simulation<FixPointSimulation<T, X, Y>, X, Y>
+    {
+        Simulation { simulation: FixPointSimulation::wrap(self.simulation, max_time) }
+    }
+
     pub fn map<F, X2, Y2>(self, fun: F) -> Simulation<std::iter::Map<T, F>, X2, Y2>
         where X2: PartialOrd + Clone, Y2: PartialOrd + Clone,
               F: FnMut((X, Y)) -> (X2, Y2) + Clone

@@ -1,5 +1,3 @@
-pub mod prelude { }
-
 #[derive(Clone)]
 pub struct LimitedSimulation<T, X, Y>
     where T: Iterator<Item = (X, Y)>, X: PartialOrd
@@ -55,6 +53,42 @@ impl<T, X, Y> Iterator for MaxStepSimulation<T, X, Y>
             self.iterator.next()
         } else {
             None
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct FixPointSimulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)>, X: Clone, Y: Clone
+{
+    iterator: T,
+    last_state: Option<Y>,
+    last_time: X,
+}
+
+impl<T, X, Y> FixPointSimulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)>, X: Clone, Y: Clone
+{
+    pub fn wrap(simulation: T, last_time: X) -> Self {
+        Self { iterator: simulation, last_state: None , last_time}
+    }
+}
+
+impl<T, X, Y> Iterator for FixPointSimulation<T, X, Y>
+    where T: Iterator<Item = (X, Y)>, X: Clone, Y: Clone
+{
+    type Item = (X, Y);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.iterator.next() {
+            Some((next_time, next_state)) => {
+                self.last_state = Some(next_state.clone());
+                Some((next_time, next_state))
+            },
+            None => {
+                self.last_state.clone()
+                    .map(|state| (self.last_time.clone(), state))
+            },
         }
     }
 }

@@ -124,7 +124,8 @@ impl Model {
             .draw()?;
 
         let simulation = Simulation::new(model)
-            .time_limit(chart.x_range().end);
+            .fix_point(max_time + 1f32)
+            .time_limit(max_time);
 
         let (_, reactant, bound_reactant, product) = EnzymaticActivity::species();
 
@@ -176,6 +177,36 @@ impl Params {
 
     pub fn max_time(mut self, max_time: f32) -> Self {
         self.max_time = max_time;
+        self
+    }
+
+    pub fn initial_enzyme(mut self, initial_enzyme: u32) -> Self {
+        self.initial_enzyme = initial_enzyme;
+        self
+    }
+
+    pub fn initial_reactant(mut self, initial_reactant: u32) -> Self {
+        self.initial_reactant = initial_reactant;
+        self
+    }
+
+    pub fn binding_rate(mut self, binding_rate: f32) -> Self {
+        self.binding_rate = binding_rate;
+        self
+    }
+
+    pub fn unbinding_rate(mut self, unbinding_rate: f32) -> Self {
+        self.unbinding_rate = unbinding_rate;
+        self
+    }
+
+    pub fn catalysis_rate(mut self, catalysis_rate: f32) -> Self {
+        self.catalysis_rate = catalysis_rate;
+        self
+    }
+
+    pub fn ssa_seed(mut self, seed: u64) -> Self {
+        self.seed = seed;
         self
     }
 
