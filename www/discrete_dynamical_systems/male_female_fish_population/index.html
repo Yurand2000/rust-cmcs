@@ -16,7 +16,7 @@
 
             async function init() {
                 const [{DDS_SLE_MFFP, DDS_SLE_MFFP_Params, default: init}, {main, setup}] = await Promise.all([
-                    import("/release/wasm_demo.js"),
+                    import("../../release/wasm_demo.js"),
                     import("./index.js"),
                 ]);
 
@@ -73,7 +73,7 @@
             </span>
             <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-800 sm:mt-0">
                 <li>
-                    <a href="/" class="hover:underline me-4 md:me-6">Home</a>
+                    <a href="../../" class="hover:underline me-4 md:me-6">Home</a>
                 </li>
             </ul>
             </div>
