@@ -15,13 +15,13 @@
             init();
 
             async function init() {
-                const [{CDS_SLE_LV, CDS_SLE_LV_Params, default: init}, {main, setup}] = await Promise.all([
+                const [{SSA_LV, SSA_LV_Params, default: init}, {main, setup}] = await Promise.all([
                     import("/release/wasm_demo.js"),
                     import("./index.js"),
                 ]);
 
                 await init();
-                setup(CDS_SLE_LV, CDS_SLE_LV_Params);
+                setup(SSA_LV, SSA_LV_Params);
                 main();
             }
         </script>
@@ -31,8 +31,9 @@
                     Lotka-Volterra Predator-Prey
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    dV/dt = rV - aVP</br>
-                    dP/dt = -sP + abVP</br>
+                    V == r ==> 2V</br>
+                    V + P == a ==> (b+1)P</br> 
+                    P == s ==> 
                 </p>
                 <p class="ml-4 mr-4 text-l font-normal">
                     where r > 0 is the birth rate of preys, s > 0 is the death rate of predators,</br>
@@ -42,20 +43,23 @@
                     Loading...
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>
-                <label for="solver" class="block mb-2 text-sm font-medium text-gray-900">ODE Solver: </label>
+                <label for="solver" class="block mb-2 text-sm font-medium text-gray-900">Solver: </label>
                 <select id="solver" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5:ring-blue-500:border-blue-500">
-                    <option value="rk4">Explicit Runge-Kutta method of order 4 with fixed step size</option>
-                    <option value="dop853">Explicit Runge-Kutta method with Dormand-Prince coefficients of order 8(5,3) and dense output of order 7</option>
-                    <option value="dopri5">Explicit Runge-Kutta method with Dormand-Prince coefficients of order 5(4) and dense output of order 4</option>
+                    <option value="rk4">ODE: Explicit Runge-Kutta method of order 4 with fixed step size</option>
+                    <option value="dop853">ODE: Explicit Runge-Kutta method with Dormand-Prince coefficients of order 8(5,3) and dense output of order 7</option>
+                    <option value="dopri5">ODE: Explicit Runge-Kutta method with Dormand-Prince coefficients of order 5(4) and dense output of order 4</option>
+                    <option value="ssa">SSA: Gillespie's Stochastic Simulation Algorithm</option>
                 </select>
                 <div class="flex items-left flex-row m-4">
                     <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">
                         <label for="init_prey_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Prey Population</label>
-                        <input id="init_prey_pop" type="range" min="1" max="2000" value="800" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <input id="init_prey_pop" type="range" min="1" max="2000" value="1000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <label for="init_predattor_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Predator Population</label>
-                        <input id="init_predator_pop" type="range" min="1" max="2000" value="600" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <input id="init_predator_pop" type="range" min="1" max="2000" value="1000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <label for="max_time" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Max Simulation Time</label>
-                        <input id="max_time" type="range" min="5" max="20" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <input id="max_time" type="range" min="0.1" max="1" value="0.1" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="seed" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Simulation Seed</label>
+                        <input id="seed" type="text" value="0" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"/>
                     </ul>
                     <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">    
                         <label for="prey_birth_rate" class="block mb-2 text-sm font-medium text-gray-900">Prey Birth Rate</label>
