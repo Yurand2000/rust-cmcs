@@ -29,8 +29,6 @@ jobs:
         wasm-pack build --release --target web --out-dir www/release &&
         cp -rf ./www/* ./_site
         rm -rf ./_site/release/README.md ./_site/release/package.json ./_site/release/.gitignore
-        rm -rf ./_site/example
-        rm -rf ./_site/old
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v3.0.1
       with:
