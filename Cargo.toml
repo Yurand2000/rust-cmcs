@@ -2,7 +2,7 @@
 name = "rust-cmcs"
 version = "0.1.0"
 authors = ["Yuri Andriaccio <yurand2000@gmail.com"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type=["cdylib"]
