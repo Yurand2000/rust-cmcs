@@ -16,7 +16,7 @@
 
             async function init() {
                 const [{CDS_SLE_SIR_V, CDS_SLE_SIR_V_Params, default: init}, {main, setup}] = await Promise.all([
-                    import("../../release/wasm_demo.js"),
+                    import("../../release/rust_cmcs.js"),
                     import("./index.js"),
                 ]);
 

@@ -16,7 +16,7 @@
 
             async function init() {
                 const [{DDS_LBM, DDS_LBM_Params, default: init}, {main, setup}] = await Promise.all([
-                    import("../../release/wasm_demo.js"),
+                    import("../../release/rust_cmcs.js"),
                     import("./index.js"),
                 ]);
 
