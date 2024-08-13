@@ -43,13 +43,12 @@ impl Model {
         chart.configure_mesh()
             .x_desc("t")
             .y_desc("N(t)")
-            .x_labels(params.max_time as usize)
+            .x_labels(10)
             .y_labels(10)
             .draw()?;
 
         let model = params.to_model();
         let simulation = Simulation::new(model)
-            .fix_point(max_time + 1f32)
             .time_limit(max_time);
 
         let [ll, lyl, lr, lyr, lrd, lyrd, rr, ryr, rdrd, rydrd, rdr, rydr, ryrd] = FrogLEComplexes::adults_objects();

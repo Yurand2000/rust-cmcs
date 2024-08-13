@@ -13,7 +13,7 @@ impl Frog {
 
     fn to_object(&self) -> Object {
         use Genotype::*;
-        
+
         let suffix = if self.adult { "_adult" } else { "_juvenile" };
         let genotype = match self.genotype {
             LL => "ll",
@@ -40,7 +40,7 @@ impl Frog {
 
     fn get_all_combinations() -> Vec<Self> {
         [true, false].into_iter()
-            .flat_map(|adult| 
+            .flat_map(|adult|
                 Genotype::get_all_combinations().into_iter()
                     .map(move |genotype| Self { genotype, adult })
             )
@@ -90,6 +90,8 @@ impl FrogLEComplexes {
     pub fn build_model(initial_frogs: (u32, u32, u32), selection_strength: f32, carry_capacity: u32, seed: u64) -> MinimalProbabilisticPSystem {
         use Genotype::*;
 
+        let (_, repr, repr1, _, _, pop) = Self::control_objects();
+
         let initial_state = [
             (Frog::new(LL, true).to_object(), initial_frogs.0 / 2),
             (Frog::new(LyL, true).to_object(), initial_frogs.0 / 2),
@@ -97,6 +99,9 @@ impl FrogLEComplexes {
             (Frog::new(LyR, true).to_object(), initial_frogs.1 / 2),
             (Frog::new(RR, true).to_object(), initial_frogs.2 / 2),
             (Frog::new(RyR, true).to_object(), initial_frogs.2 / 2),
+            (repr, 1),
+            (repr1, 1),
+            (pop, (initial_frogs.0 / 2 + initial_frogs.1 / 2 + initial_frogs.2 / 2) * 2)
         ];
 
         let rules = Self::rules(selection_strength, carry_capacity as f32);
