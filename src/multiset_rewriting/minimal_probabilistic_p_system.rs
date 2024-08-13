@@ -41,10 +41,6 @@ impl MultiSet {
         self
     }
 
-    fn to_vector(self) -> Vec<(Object, u32)> {
-        self.0.into_iter().collect()
-    }
-
     pub fn get(&self, obj: &Object) -> u32 {
         self.0.get(obj).cloned().unwrap_or(0)
     }
@@ -156,7 +152,7 @@ impl MinimalProbabilisticPSystem {
 }
 
 impl Iterator for MinimalProbabilisticPSystem {
-    type Item = (f32, Vec<(Object, u32)>);
+    type Item = (f32, MultiSet);
 
     fn next(&mut self) -> Option<Self::Item> {
         let state = std::mem::take(&mut self.last_state);
@@ -166,11 +162,11 @@ impl Iterator for MinimalProbabilisticPSystem {
                 let next_state = Self::step(state, &self.rules, &mut self.rng);
 
                 self.last_state = Some((next_time, next_state.clone()));
-                Some((next_time, next_state.to_vector()))
+                Some((next_time, next_state.clone()))
             },
             None => {
                 self.last_state = Some((0f32, self.initial_state.clone()));
-                Some((0f32, self.initial_state.clone().to_vector()))
+                Some((0f32, self.initial_state.clone()))
             },
         }
     }

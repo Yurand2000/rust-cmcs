@@ -4,7 +4,8 @@ mod pages {
 
 mod prelude {
     pub use super::minimal_probabilistic_p_system::*;
+    pub use super::frog_l_e_complexes::*;
 }
 
 mod minimal_probabilistic_p_system;
-pub mod frog_l_e_complexes;
+mod frog_l_e_complexes;

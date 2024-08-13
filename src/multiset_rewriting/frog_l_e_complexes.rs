@@ -87,7 +87,7 @@ enum Sex {
 pub struct FrogLEComplexes;
 
 impl FrogLEComplexes {
-    pub fn build_model(initial_frogs: (u32, u32, u32), selection_strength: f32, carry_capacity: f32, seed: u64) -> MinimalProbabilisticPSystem {
+    pub fn build_model(initial_frogs: (u32, u32, u32), selection_strength: f32, carry_capacity: u32, seed: u64) -> MinimalProbabilisticPSystem {
         use Genotype::*;
 
         let initial_state = [
@@ -99,11 +99,31 @@ impl FrogLEComplexes {
             (Frog::new(RyR, true).to_object(), initial_frogs.2 / 2),
         ];
 
-        let rules = Self::rules(selection_strength, carry_capacity);
+        let rules = Self::rules(selection_strength, carry_capacity as f32);
         MinimalProbabilisticPSystem::new(initial_state, rules, seed)
     }
 
-    fn control_objects() -> (Object, Object, Object, Object, Object, Object) {
+    pub fn adults_objects() -> [Object; 13] {
+        use Genotype::*;
+
+        [
+            Frog::new(LL, true).to_object(),
+            Frog::new(LyL, true).to_object(),
+            Frog::new(LR, true).to_object(),
+            Frog::new(LyR, true).to_object(),
+            Frog::new(LRd, true).to_object(),
+            Frog::new(LyRd, true).to_object(),
+            Frog::new(RR, true).to_object(),
+            Frog::new(RyR, true).to_object(),
+            Frog::new(RdRd, true).to_object(),
+            Frog::new(RydRd, true).to_object(),
+            Frog::new(RdR, true).to_object(),
+            Frog::new(RydR, true).to_object(),
+            Frog::new(RyRd, true).to_object(),
+        ]
+    }
+
+    pub fn control_objects() -> (Object, Object, Object, Object, Object, Object) {
         (
             Object::from_str("SEL"),
             Object::from_str("REPR"),
