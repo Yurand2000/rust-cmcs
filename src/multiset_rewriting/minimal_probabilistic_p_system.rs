@@ -1,9 +1,15 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc};
 
 use rand::SeedableRng;
 
 #[derive(Clone, PartialEq, Eq, Hash)]
-pub struct Object(String);
+pub struct Object(pub String);
+
+impl Object {
+    pub fn from_str(str: &'static str) -> Self {
+        Self(str.to_owned())
+    }
+}
 
 #[derive(Clone)]
 pub struct MultiSet(HashMap<Object, u32>);
@@ -38,6 +44,10 @@ impl MultiSet {
     fn to_vector(self) -> Vec<(Object, u32)> {
         self.0.into_iter().collect()
     }
+
+    pub fn get(&self, obj: &Object) -> u32 {
+        self.0.get(obj).cloned().unwrap_or(0)
+    }
 }
 
 #[derive(Clone)]
@@ -45,19 +55,19 @@ pub struct EvolutionRule {
     reactants: MultiSet,
     products: MultiSet,
     promoters: MultiSet,
-    rate_function: fn(&MultiSet) -> f32
+    rate_function: Rc<dyn Fn(&MultiSet) -> f32>,
 }
 
 impl EvolutionRule {
-    pub fn new<const C1: usize, const C2: usize, const C3: usize> (
-        rectants: [(Object, u32); C1], products: [(Object, u32); C1], promoters: [(Object, u32); C1],
-        rate_function: fn(&MultiSet) -> f32
+    pub fn new<const C1: usize, const C2: usize, const C3: usize, F: Fn(&MultiSet) -> f32 + 'static> (
+        reactants: [(Object, u32); C1], products: [(Object, u32); C2], promoters: [(Object, u32); C3],
+        rate_function: F,
     ) -> Self {
         Self {
-            reactants: MultiSet::from_array(rectants),
+            reactants: MultiSet::from_array(reactants),
             products: MultiSet::from_array(products),
             promoters: MultiSet::from_array(promoters),
-            rate_function,
+            rate_function: Rc::new(rate_function),
         }
     }
 
@@ -115,21 +125,30 @@ impl MinimalProbabilisticPSystem {
 
             let rate_sum: f32 = rates.iter().sum();
 
-            let rate_partial_sums =
-                rates.into_iter()
-                .scan(0f32, |partial_sum, rate| {
-                    *partial_sum = *partial_sum + rate;
-                    Some(*partial_sum)
-                });
+            let rule =
+                if rate_sum == 0f32 {
+                    //if the rate sum is zero, then pick any applicable rule.
+                    let distibution = rand::distributions::Uniform::new(0, applicable.len());
+                    let chosen_rule = rng.sample(distibution);
 
-            //chose one of the rules with probability proportional to their rate
-            let distibution = rand::distributions::Uniform::new(0f32, rate_sum);
-            let chosen_rate = rng.sample(distibution);
+                    applicable[chosen_rule]
+                } else {
+                    let rate_partial_sums =
+                        rates.into_iter()
+                        .scan(0f32, |partial_sum, rate| {
+                            *partial_sum = *partial_sum + rate;
+                            Some(*partial_sum)
+                        });
 
-            let rule = applicable.into_iter()
-                .zip(rate_partial_sums.into_iter())
-                .find_map(|(rule, rate)| if rate > chosen_rate { Some(rule) } else { None })
-                .unwrap();
+                    //chose one of the rules with probability proportional to their rate
+                    let distibution = rand::distributions::Uniform::new(0f32, rate_sum);
+                    let chosen_rate = rng.sample(distibution);
+
+                    applicable.into_iter()
+                        .zip(rate_partial_sums.into_iter())
+                        .find_map(|(rule, rate)| if rate > chosen_rate { Some(rule) } else { None })
+                        .unwrap()
+                };
 
             rule.apply(&mut reagents, &mut products);
         }
