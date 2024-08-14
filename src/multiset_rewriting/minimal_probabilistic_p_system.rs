@@ -102,40 +102,46 @@ impl MinimalProbabilisticPSystem {
         let mut reagents = state.clone();
         let mut products = MultiSet::empty();
 
-        // filter the rules that cannot be applied
         let mut applicable: Vec<_> = rules.iter()
+            // filter the rules that cannot be applied
             .filter(|rule| rule.promoters.is_subset(&state))
+            // compute the rule rates
             .map(|rule| (rule, (rule.rate_function)(&state)))
+            .filter(|(_, rate)| *rate > 0f32)
             .collect();
 
+        let mut rate_sum: f32 = applicable.iter().map(|(_, rate)| rate).sum();
+
         loop {
+            // filter non applicable rules
             applicable = applicable.into_iter()
-                .filter(|(rule, _)| rule.reactants.is_subset(&reagents)).collect();
+                .filter(|(rule, rate)| {
+                    if rule.reactants.is_subset(&reagents) {
+                        true
+                    } else {
+                        rate_sum -= rate;
+                        false
+                    }
+                })
+                .collect();
 
             if applicable.is_empty() {
                 return reagents.join(products);
             }
 
-            //compute rule rates
-            let rate_sum: f32 = applicable.iter()
-                .map(|(_, rate)| rate).sum();
-                    
-            let rate_partial_sums =
-                applicable.iter()
-                .map(|(_, rate)| rate)
-                .scan(0f32, |partial_sum, rate| {
+            //compute partial sums
+            let mut iter = applicable.iter()
+                .scan(0f32, |partial_sum, (rule, rate)| {
                     *partial_sum = *partial_sum + rate;
-                    Some(*partial_sum)
+                    Some((rule, *partial_sum))
                 });
 
             //chose one of the rules with probability proportional to their rate
             let distibution = rand::distributions::Uniform::new(0f32, rate_sum);
             let chosen_rate = rng.sample(distibution);
 
-            let rule = applicable.iter()
-                .map(|(rule, _)| rule)
-                .zip(rate_partial_sums.into_iter())
-                .find_map(|(rule, rate)| if rate > chosen_rate { Some(rule) } else { None })
+            let rule = iter
+                .find_map(|(rule, partial_sum)| if partial_sum >= chosen_rate { Some(rule) } else { None })
                 .unwrap();
 
             rule.apply(&mut reagents, &mut products);
