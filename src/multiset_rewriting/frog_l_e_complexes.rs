@@ -95,8 +95,8 @@ impl FrogLEComplexes {
         let initial_state = [
             (Frog::new(LL, true).to_object(), initial_frogs.0 / 2),
             (Frog::new(LyL, true).to_object(), initial_frogs.0 / 2),
-            (Frog::new(LR, true).to_object(), initial_frogs.1 / 2),
-            (Frog::new(LyR, true).to_object(), initial_frogs.1 / 2),
+            (Frog::new(LRd, true).to_object(), initial_frogs.1 / 2),
+            (Frog::new(LyRd, true).to_object(), initial_frogs.1 / 2),
             (Frog::new(RR, true).to_object(), initial_frogs.2 / 2),
             (Frog::new(RyR, true).to_object(), initial_frogs.2 / 2),
             (repr, 1),
@@ -199,6 +199,12 @@ impl FrogLEComplexes {
             let promoters = [(selection_stage.clone(), 1)];
             let fitness = Self::fitness(&frog);
 
+            if fitness == 0f32 {
+                return vec![
+                    EvolutionRule::new(reactants, [], promoters, |_| 1f32),
+                ].into_iter();
+            }
+
             let pop_clone = pop.clone();
             let rate_function = move |state: &MultiSet| -> f32 {
                 let frogs = state.get(&pop_clone) as f32;
@@ -211,7 +217,7 @@ impl FrogLEComplexes {
                 1f32 - rate_function_clone(state)
             };
 
-            [
+            vec![
                 EvolutionRule::new(reactants.clone(), products, promoters.clone(), rate_function),
                 EvolutionRule::new(reactants, [], promoters, inv_rate_function),
             ].into_iter()
@@ -221,12 +227,11 @@ impl FrogLEComplexes {
     fn stages_alternation_rules() -> Vec<EvolutionRule> {
         let (sel, repr, repr1, repr2, repr3, _) = Self::control_objects();
 
-        // rate functions returning zero should ensure that these rules are triggered when nothing else can be applied.
         vec![
-            EvolutionRule::new([(sel.clone(), 1)], [(repr.clone(), 1), (repr1.clone(), 1)], [], |_| { 0f32 }),
-            EvolutionRule::new([(repr1.clone(), 1)], [(repr2.clone(), 1)], [], |_| { 0f32 }),
-            EvolutionRule::new([(repr2.clone(), 1)], [(repr3.clone(), 1)], [], |_| { 0f32 }),
-            EvolutionRule::new([(repr.clone(), 1), (repr3.clone(), 1)], [(sel.clone(), 1)], [], |_| { 0f32 }),
+            EvolutionRule::new([(sel.clone(), 1)], [(repr.clone(), 1), (repr1.clone(), 1)], [], |_| { 1f32 }),
+            EvolutionRule::new([(repr1.clone(), 1)], [(repr2.clone(), 1)], [], |_| { 1f32 }),
+            EvolutionRule::new([(repr2.clone(), 1)], [(repr3.clone(), 1)], [], |_| { 1f32 }),
+            EvolutionRule::new([(repr.clone(), 1), (repr3.clone(), 1)], [(sel.clone(), 1)], [], |_| { 1f32 }),
         ]
     }
 
@@ -258,10 +263,10 @@ impl FrogLEComplexes {
             (RdR, LyRd) => vec![RdR, RdRd],
             (RdR, LyR) => vec![RdR, RR],
             (RR, LyL) => vec![LyR, LR],
-            (RR, LyRd) => vec![RdR, RR],
+            (RR, LyRd) => vec![RdR],
             (RR, LyR) => vec![RR],
 
-            (LRd, RyR) => vec![RR, RdR, RyR, RydR, RyRd],
+            (LRd, RyR) => vec![RdR, RydR, RyRd],
             (LRd, RydR) => vec![RdR, RdRd, RyRd, RydR, RydRd],
             (LRd, RyRd) => vec![RdR, RdRd, RyRd, RydR, RydRd],
             (LR, RyR) => vec![RR, RyR],
@@ -279,6 +284,11 @@ impl FrogLEComplexes {
 
     fn fitness(frog: &Frog) -> f32 {
         use Genotype::*;
+
+        match frog.genotype {
+            RdRd | RydRd => { return 0f32; },
+            _ => (),
+        };
 
         if frog.adult {
             match frog.genotype {

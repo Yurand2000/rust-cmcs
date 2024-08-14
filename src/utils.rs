@@ -125,6 +125,16 @@ impl<T, X, Y> Simulation<T, X, Y>
     {
         Simulation { simulation: self.simulation.map(fun) }
     }
+
+    pub fn cache(self) -> Simulation<impl Iterator<Item = (X, Y)> + Clone, X, Y>
+    {
+        let data: Vec<_> = self.collect();
+        let data = std::rc::Rc::new(data);
+        let len = data.len();
+        let simulation = (0..len).map(move |i| data[i].clone());
+
+        Simulation { simulation }
+    }
 }
 
 impl<T, X, Y> Iterator for Simulation<T, X, Y>

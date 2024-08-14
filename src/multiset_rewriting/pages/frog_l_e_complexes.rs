@@ -49,7 +49,8 @@ impl Model {
 
         let model = params.to_model();
         let simulation = Simulation::new(model)
-            .time_limit(max_time);
+            .time_limit(max_time)
+            .cache();
 
         let [ll, lyl, lr, lyr, lrd, lyrd, rr, ryr, rdrd, rydrd, rdr, rydr, ryrd] = FrogLEComplexes::adults_objects();
 
