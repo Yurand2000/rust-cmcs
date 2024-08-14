@@ -7,3 +7,4 @@ pub mod prelude {
 }
 
 mod discete_event_simulation;
+mod customer_queue;
