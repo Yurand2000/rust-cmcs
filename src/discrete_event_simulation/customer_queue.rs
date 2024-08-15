@@ -4,9 +4,19 @@ use super::prelude::*;
 
 #[derive(Clone)]
 pub struct CustomerQueueState {
-    queue_length: u32,
-    operator_available: bool,
+    pub queue_length: u32,
+    pub operator_available: bool,
     rng: rand::rngs::SmallRng,
+}
+
+impl CustomerQueueState {
+    fn new(seed: u64) -> Self {
+        Self {
+            queue_length: 0,
+            operator_available: true,
+            rng: rand::rngs::SmallRng::seed_from_u64(seed),
+        }
+    }
 }
 
 impl Default for CustomerQueueState {
@@ -22,6 +32,29 @@ impl Default for CustomerQueueState {
 pub struct CustomerQueue;
 
 impl CustomerQueue {
+    const CUSTOMER_ARRIVAL: &'static str = "CustomerArrival";
+    const CUSTOMER_SERVED: &'static str = "CustomerServed";
+    const CUSTOMER_MOVING_TO_SERVICE: &'static str = "CustomerMovingToService";
+
+    pub fn build_des(lambda: f32, mean: f32, std_dev: f32, seed: u64) -> DiscreteEventSimulation<CustomerQueueState> {
+        DiscreteEventSimulation::new(
+            CustomerQueueState::new(seed),
+            vec![
+                (0f32, vec![Self::CUSTOMER_ARRIVAL.to_owned()])
+            ],
+            vec![
+                Self::CUSTOMER_MOVING_TO_SERVICE.to_owned()
+            ],
+            vec![
+                (Self::CUSTOMER_ARRIVAL.to_owned(), Self::customer_arrival_event(lambda)),
+                (Self::CUSTOMER_SERVED.to_owned(), Self::customer_served())
+            ],
+            vec![
+                (Self::CUSTOMER_MOVING_TO_SERVICE.to_owned(), Self::customer_moving_to_service(mean, std_dev))
+            ]
+        )
+    }
+
     fn customer_arrival_event(lambda: f32) -> TimedEvent<CustomerQueueState> {
         TimedEvent::new(move |des_state| {
             let state: &mut CustomerQueueState = des_state.get_state_mut();
@@ -29,7 +62,7 @@ impl CustomerQueue {
             let delta_time = state.rng.sample(distribution);
 
             state.queue_length += 1;
-            des_state.schedule(delta_time, "CustomerArrival".to_owned());
+            des_state.schedule(delta_time, Self::CUSTOMER_ARRIVAL.to_owned());
         })
     }
 
@@ -42,12 +75,12 @@ impl CustomerQueue {
 
                 state.queue_length -= 1;
                 state.operator_available = false;
-                des_state.schedule(delta_time, "CustomerServed".to_owned());
-                des_state.schedule_conditional("CustomerMovingToService".to_owned());
+                des_state.schedule(delta_time, Self::CUSTOMER_SERVED.to_owned());
+                des_state.schedule_conditional(Self::CUSTOMER_MOVING_TO_SERVICE.to_owned());
             },
             move |des_state| {
                 let state: &CustomerQueueState = des_state.get_state();
-                state.queue_length > 0 && state.operator_available
+                state.operator_available && state.queue_length > 0
             }
         )
     }

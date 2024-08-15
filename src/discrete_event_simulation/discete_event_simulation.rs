@@ -32,10 +32,15 @@ impl<S> TimedEvent<S>
 }
 
 #[derive(Clone, Copy)]
-#[derive(PartialEq, PartialOrd)]
+#[derive(PartialEq)]
 struct Time(pub f32);
 
 impl Eq for Time {}
+impl PartialOrd for Time {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.0.partial_cmp(&other.0)
+    }
+}
 impl Ord for Time {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.0.partial_cmp(&other.0).unwrap()
@@ -96,7 +101,7 @@ impl<S> Iterator for DiscreteEventSimulation<S>
         let state = std::mem::take(&mut self.state);
         match state {
             Some((time, mut state)) => {
-                let mut des_state = DESState {
+                let des_state = DESState {
                     time,
                     state: &mut state,
                     future_event_list: &mut self.future_event_list,
@@ -151,6 +156,13 @@ impl<S> Iterator for DiscreteEventSimulation<S>
 
                 let (next_time, event) = event?; // if there is no event applicable, just return None
 
+                let mut des_state = DESState {
+                    time: next_time,
+                    state: &mut state,
+                    future_event_list: &mut self.future_event_list,
+                    conditional_event_list: &mut self.conditional_event_list,
+                };
+
                 event(&mut des_state);
 
                 self.state = Some((next_time, state));
@@ -190,7 +202,7 @@ impl<'a, S> DESState<'a, S>
     }
 
     pub fn schedule(&mut self, delta_time: f32, name: String) {
-        let time = Time(self.time + delta_time);
+        let time = Time(self.time + f32::max(0f32, delta_time));
 
         self.future_event_list.entry(time)
             .and_modify(|map| { map.insert(name.clone()); })
