@@ -1,5 +1,5 @@
 pub mod pages {
-
+    mod elementary_automaton;
 }
 
 pub mod prelude {

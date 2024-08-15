@@ -1,11 +1,24 @@
 use bitvec::prelude::*;
 
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub enum BoundaryCondition {
+    #[default]
     Fixed0,
     Fixed1,
     Periodic,
     Reflective
+}
+
+impl BoundaryCondition {
+    pub fn from_str(str: &str) -> Option<Self> {
+        match str {
+            "fixed0" => Some(Self::Fixed0),
+            "fixed1" => Some(Self::Fixed1),
+            "periodic" => Some(Self::Periodic),
+            "reflective" => Some(Self::Reflective),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -14,7 +27,7 @@ pub struct Lattice {
 }
 
 impl Lattice {
-    fn empty(size: usize) -> Self {
+    pub fn empty(size: usize) -> Self {
         Self { cells: BitVec::repeat(false, size) }
     }
 
@@ -24,6 +37,13 @@ impl Lattice {
 
     pub fn get(&self, idx: usize) -> Option<bool> {
         self.cells.get(idx).map(|bit| *bit)
+    }
+
+    pub fn set(&mut self, idx: usize, value: bool) -> bool {
+        match self.cells.get_mut(idx) {
+            Some(mut cell) => { *cell = value; true },
+            None => false,
+        }
     }
 }
 
@@ -38,7 +58,7 @@ impl IntoIterator for Lattice {
 }
 
 #[derive(Clone)]
-pub struct Automaton {
+pub struct ElementaryAutomaton {
     initial_state: Lattice,
     boundary: BoundaryCondition,
     rule: u8,
@@ -46,7 +66,16 @@ pub struct Automaton {
     state: Option<(u32, Lattice)>,
 }
 
-impl Automaton {
+impl ElementaryAutomaton {
+    pub fn new(initial_state: Lattice, boundary: BoundaryCondition, rule: u8) -> Self {
+        Self {
+            initial_state,
+            boundary,
+            rule,
+            state: None,
+        }
+    }
+
     fn step(state: Lattice, boundary: BoundaryCondition, rule: u8) -> Lattice {
         use BoundaryCondition::*;
 
@@ -55,47 +84,47 @@ impl Automaton {
         let mut next_state = Lattice::empty(size);
 
         // compute boundary cells
-        let (neighborhood_first, neighborhood_last) =
+        let (neighborhood_first, neighborhood_last) = 
             match boundary {
                 Fixed0 => (
-                    ((state.cells[0] as u8) << 1 + (state.cells[1] as u8)),
-                    ((state.cells[last - 1] as u8) << 2 + (state.cells[last] as u8) << 1)
+                    (((state.cells[0] as u8) << 1) + (state.cells[1] as u8)),
+                    (((state.cells[last - 1] as u8) << 2) + ((state.cells[last] as u8) << 1))
                 ),
                 Fixed1 => (
-                    (4 + (state.cells[0] as u8) << 1 + (state.cells[1] as u8)),
-                    ((state.cells[last - 1] as u8) << 2 + (state.cells[last] as u8) << 1 + 1)
+                    (4 + ((state.cells[0] as u8) << 1) + (state.cells[1] as u8)),
+                    (((state.cells[last - 1] as u8) << 2) + ((state.cells[last] as u8) << 1) + 1)
                 ),
                 Periodic => (
-                    ((state.cells[last] as u8) << 2 + (state.cells[0] as u8) << 1 + (state.cells[1] as u8)),
-                    ((state.cells[last - 1] as u8) << 2 + (state.cells[last] as u8) << 1 + (state.cells[0] as u8))
+                    (((state.cells[last] as u8) << 2) + ((state.cells[0] as u8) << 1) + (state.cells[1] as u8)),
+                    (((state.cells[last - 1] as u8) << 2) + ((state.cells[last] as u8) << 1) + (state.cells[0] as u8))
                 ),
                 Reflective => (
-                    ((state.cells[1] as u8) << 2 + (state.cells[0] as u8) << 1 + (state.cells[1] as u8)),
-                    ((state.cells[last - 1] as u8) << 2 + (state.cells[last] as u8) << 1 + (state.cells[last - 1] as u8))
+                    (((state.cells[1] as u8) << 2) + ((state.cells[0] as u8) << 1) + (state.cells[1] as u8)),
+                    (((state.cells[last - 1] as u8) << 2) + ((state.cells[last] as u8) << 1) + (state.cells[last - 1] as u8))
                 ),
             };
 
         next_state.cells
-            .set(0, (rule & neighborhood_first) > 0);
+            .set(0, (rule & (1 << neighborhood_first)) > 0);
         next_state.cells
-            .set(last, (rule & neighborhood_last) > 0);
+            .set(last, (rule & (1 << neighborhood_last)) > 0);
 
         // compute inner cells
         for idx in 1..last {
-            let neighborhood: u8 =
-                (state.cells[idx - 1] as u8) << 2 +
-                (state.cells[idx] as u8) << 1 +
+            let neighborhood = 
+                ((state.cells[idx - 1] as u8) << 2) +
+                ((state.cells[idx] as u8) << 1) +
                 (state.cells[idx + 1] as u8);
 
             next_state.cells
-                .set(idx, (rule & neighborhood) > 0);
+                .set(idx, (rule & (1 << neighborhood)) > 0);
         }
 
         next_state
     }
 }
 
-impl Iterator for Automaton {
+impl Iterator for ElementaryAutomaton {
     type Item = (u32, Lattice);
 
     fn next(&mut self) -> Option<Self::Item> {

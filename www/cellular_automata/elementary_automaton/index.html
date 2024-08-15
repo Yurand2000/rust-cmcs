@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<title>Elementary Automata</title>        
+	</head>
+    <body>
+        <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+        <script>
+            init();
+
+            async function init() {
+                const [{CA_ELEM, CA_ELEM_Params, default: init}, {main, setup}] = await Promise.all([
+                    import("../../release/rust_cmcs.js"),
+                    import("./index.js"),
+                ]);
+
+                await init();
+                setup(CA_ELEM, CA_ELEM_Params);
+                main();
+            }
+        </script>
+        <div class="flex bg-gray-200 items-center flex-col rounded-lg shadow m-8">
+            <div class="flex items-center flex-col mb-4 mt-4 bg-white rounded-lg shadow m-4">
+                <h1 class="mt-4 text-5xl font-extrabold leading-none text-gray-900">
+                    Elementary Automata
+                </h1>
+                <p class="ml-4 mr-4 mt-4 text-l font-normal">
+                    Interesting rules: 28, 50, 54, 60, 90, 94, 102, 110, 150, 158, 188, 190, 220, 222.</br>
+                    <a href="https://en.wikipedia.org/wiki/Rule_30" class="hover:underline text-gray-500">Wolfram's RNG</a> in Mathematica: 30.
+                </p>
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                    Loading...
+                </p>
+                <canvas class="m-2" id="canvas" width="600" height="400"></canvas>
+                <div class="flex items-left flex-row m-4">
+                    <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">
+                        <label for="resolution" class="block mb-2 text-sm font-medium text-gray-900">Grid Size</label>
+                        <input id="resolution" type="range" min="128" max="1024" value="256" step="16" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="boundary_condition" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Boundary Condition</label>
+                        <select id="boundary_condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5:ring-blue-500:border-blue-500">
+                            <option value="fixed0">Fixed, with value 0</option>
+                            <option value="fixed1">Fixed, with value 1</option>
+                            <option value="periodic">Periodic</option>
+                            <option value="reflective">Reflective</option>
+                        </select>
+                        <label for="rule" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Automata Rule</label>
+                        <input id="rule" type="text" value="30" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"/>
+                    </ul>
+                    <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">    
+                        <label for="max_time" class="block mb-2 text-sm font-medium text-gray-900">Max Simulation Time</label>
+                        <input id="max_time" type="range" min="128" max="1024" value="256" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="seed" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Simulation Seed</label>
+                        <input id="seed" type="text" value="0" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"/>
+                    </ul>
+                </div>
+                <p id="status" class="mb-6 font-normal text-gray-500 sm:px-16 xl:px-48">
+                    Loading WebAssembly...
+                </p>
+            </div>
+        </div>
+        <footer class="bg-gray-200 rounded-lg shadow m-8">
+            <div class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
+            <span class="text-sm text-gray-800 sm:text-center">
+                Yuri Andriaccio (yurand2000@gmail.com)
+            </span>
+            <ul class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-800 sm:mt-0">
+                <li>
+                    <a href="../../" class="hover:underline me-4 md:me-6">Home</a>
+                </li>
+            </ul>
+            </div>
+        </footer>
+    </body>
+</html>
