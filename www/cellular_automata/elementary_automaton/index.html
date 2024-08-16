@@ -46,7 +46,7 @@
                         <select id="boundary_condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5:ring-blue-500:border-blue-500">
                             <option value="fixed0">Fixed, with value 0</option>
                             <option value="fixed1">Fixed, with value 1</option>
-                            <option value="periodic">Periodic</option>
+                            <option value="periodic" selected="selected">Periodic</option>
                             <option value="reflective">Reflective</option>
                         </select>
                         <label for="rule" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Automata Rule</label>
@@ -55,7 +55,14 @@
                     <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">    
                         <label for="max_time" class="block mb-2 text-sm font-medium text-gray-900">Max Simulation Time</label>
                         <input id="max_time" type="range" min="128" max="1024" value="256" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                        <label for="seed" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Simulation Seed</label>
+                        <label for="start_state" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Starting State</label>
+                        <select id="start_state" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5:ring-blue-500:border-blue-500">
+                            <option value="single">Single Cell</option>
+                            <option value="random">Random</option>
+                            <option value="empty">All Cells to 0</option>
+                            <option value="full">All Cells to 1</option>
+                        </select>
+                        <label for="seed" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Seed for Random Start</label>
                         <input id="seed" type="text" value="0" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"/>
                     </ul>
                 </div>

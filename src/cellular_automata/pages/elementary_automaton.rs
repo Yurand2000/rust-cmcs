@@ -1,4 +1,5 @@
 use plotters::prelude::*;
+use rand::{Rng, SeedableRng};
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 use image::imageops::FilterType;
@@ -16,6 +17,8 @@ pub struct Params {
     resolution: u32,
     boundary: BoundaryCondition,
     rule: u8,
+    initial_state: StartingState,
+    seed: u64,
 }
 
 #[wasm_bindgen(js_class = CA_ELEM)]
@@ -94,9 +97,42 @@ impl Params {
         self
     }
 
+    pub fn initial_state(mut self, initial_state: String) -> Self {
+        self.initial_state = StartingState::from_str(&initial_state).unwrap();
+        self
+    }
+
+    pub fn seed(mut self, seed: u64) -> Self {
+        self.seed = seed;
+        self
+    }
+
     fn to_model(self) -> ElementaryAutomaton {
-        let mut initial_state = Lattice::empty(self.resolution as usize);
-        initial_state.set(self.resolution as usize / 2, true);
+        let initial_state =
+            match self.initial_state {
+                StartingState::SingleCell => {
+                    let mut state = Lattice::empty(self.resolution as usize);
+                    state.set(self.resolution as usize / 2, true);
+
+                    state
+                },
+                StartingState::Random => {
+                    let mut state = Lattice::empty(self.resolution as usize);
+                    let distribution = rand::distributions::Bernoulli::new(0.5).unwrap();
+                    let mut rng = rand::rngs::SmallRng::seed_from_u64(self.seed);
+                    for idx in 0..(self.resolution as usize) {
+                        state.set(idx, rng.sample(distribution));
+                    }
+
+                    state
+                },
+                StartingState::Full => {
+                    Lattice::full(self.resolution as usize)
+                },
+                StartingState::Empty => {
+                    Lattice::empty(self.resolution as usize)
+                },
+            };
 
         ElementaryAutomaton::new(
             initial_state,

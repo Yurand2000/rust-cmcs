@@ -8,6 +8,7 @@ const canvas_text = document.getElementById("canvas_text");
 const resolution = document.getElementById("resolution");
 const boundary_condition = document.getElementById("boundary_condition");
 const rule_field = document.getElementById("rule");
+const start_state = document.getElementById("start_state");
 const max_time = document.getElementById("max_time");
 const seed = document.getElementById("seed");
 
@@ -33,6 +34,7 @@ function setupUI() {
 	resolution.addEventListener("input", updatePlot);
 	boundary_condition.addEventListener("input", updatePlot);
 	rule_field.addEventListener("input", updatePlot);
+    start_state.addEventListener("input", updatePlot);
 	max_time.addEventListener("input", updatePlot);
 	seed.addEventListener("input", updatePlot);
 }
@@ -61,6 +63,8 @@ function updatePlot() {
         .max_time(Number(max_time.value))
         .resolution(Number(resolution.value))
         .boundary(boundary_condition.value)
+        .initial_state(start_state.value)
+        .seed(seed.value)
         .rule(rule);
     chart = Model.draw(canvas, params);
     canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +

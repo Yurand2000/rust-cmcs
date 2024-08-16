@@ -31,6 +31,10 @@ impl Lattice {
         Self { cells: BitVec::repeat(false, size) }
     }
 
+    pub fn full(size: usize) -> Self {
+        Self { cells: BitVec::repeat(true, size) }
+    }
+
     pub fn size(&self) -> usize {
         self.cells.len()
     }

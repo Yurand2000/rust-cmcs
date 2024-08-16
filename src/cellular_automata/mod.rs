@@ -4,6 +4,8 @@ pub mod pages {
 
 pub mod prelude {
     pub use super::elementary_automaton::*;
+    pub use super::common::*;
 }
 
 mod elementary_automaton;
+mod common;
