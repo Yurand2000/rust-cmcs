@@ -9,4 +9,5 @@ pub mod prelude {
 }
 
 mod elementary_automaton;
+mod maze_solver;
 mod common;
