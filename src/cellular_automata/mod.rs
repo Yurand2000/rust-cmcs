@@ -1,4 +1,5 @@
 pub mod pages {
+    mod traffic_jam;
     mod elementary_automaton;
 }
 
