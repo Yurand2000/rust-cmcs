@@ -9,6 +9,7 @@ pub enum Cell {
 }
 
 #[derive(Clone)]
+#[derive(PartialEq, Eq)]
 pub struct Lattice {
     cells: Vec<Cell>,
     size: (u32, u32)
@@ -49,6 +50,10 @@ impl Lattice {
             cells: vec![Cell::Wall; (size_x * size_y) as usize],
             size: (size_x, size_y),
         }
+    }
+
+    pub fn size(&self) -> (u32, u32) {
+        self.size
     }
 
     pub fn get(&self, x: u32, y: u32) -> Option<&Cell> {
@@ -94,6 +99,10 @@ pub struct MazeSolver {
 }
 
 impl MazeSolver {
+    pub fn new(maze: Lattice) -> Self {
+        Self { maze, state: None }
+    }
+
     fn step(state: Lattice) -> Lattice {
         use Cell::*;
 

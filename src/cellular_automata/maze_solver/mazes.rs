@@ -1,4 +1,4 @@
-const MAZE0: &'static str ="\
+pub const MAZE0: &'static str ="\
     ######################E#########\n\
     # ###   #   #   #    #    #    #\n\
     #     #   # ### #### #### # ## #\n\

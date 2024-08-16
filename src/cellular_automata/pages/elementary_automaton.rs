@@ -5,7 +5,7 @@ use web_sys::HtmlCanvasElement;
 use image::imageops::FilterType;
 
 use crate::prelude::*;
-use crate::cellular_automata::prelude::*;
+use crate::cellular_automata::prelude::{*, elementary::*};
 
 #[wasm_bindgen(js_name = CA_ELEM)]
 pub struct Model { }
