@@ -191,3 +191,5 @@ impl Iterator for MazeSolver {
         }
     }
 }
+
+pub mod mazes;
