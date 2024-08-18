@@ -1,7 +1,8 @@
 class Model {}
 class Params {}
 
-const canvas = document.getElementById("canvas");
+const canvas = document.createElement("canvas");
+const image = document.getElementById("image");
 const status = document.getElementById("status");
 const canvas_text = document.getElementById("canvas_text");
 
@@ -14,6 +15,7 @@ let model = null;
 /** Main entry point */
 export function main() {
     setupUI();
+    updateModel();
     setupCanvas();
 }
 
@@ -28,22 +30,22 @@ function setupUI() {
     status.innerText = "WebAssembly loaded!";
     window.addEventListener("resize", setupCanvas);
     
-	maze.addEventListener("input", updateModel);
+	maze.addEventListener("input", updateModelAndDraw);
 	step.addEventListener("input", updatePlot);
 }
 
 /** Setup canvas to properly handle high DPI and redraw current plot. */
 function setupCanvas() {
 	const dpr = window.devicePixelRatio || 1.0;
-    const aspectRatio = canvas.width / canvas.height;
-    var size = canvas.parentNode.offsetWidth * 0.8;
-    if (size < 600)
-        size = 600;
-    canvas.style.width = size + "px";
-    canvas.style.height = size / aspectRatio + "px";
-    canvas.width = size;
-    canvas.height = size / aspectRatio;
-    updateModel();
+    const aspectRatio = image.width / image.height;
+    var size = image.parentNode.offsetWidth * 0.8;
+    if (size < 400)
+        size = 400;
+    image.style.width = size + "px";
+    image.style.height = size / aspectRatio + "px";
+    image.width = size;
+    image.height = size / aspectRatio;
+    updatePlot();
 }
 
 function updateModel() {
@@ -53,6 +55,11 @@ function updateModel() {
             .maze(maze.value)
     );
 
+    step.max = model.max_step();
+}
+
+function updateModelAndDraw() {
+    updateModel();
     updatePlot();
 }
 
@@ -62,7 +69,9 @@ function updatePlot() {
     const start = performance.now();
 
     chart = model.draw(canvas, step.value);
+    image.src = canvas.toDataURL("image/png");
     canvas_text.innerHTML = `Current Step: ${step.value}`;
     const end = performance.now();
-    status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
+    status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;
+
 }

@@ -1,17 +1,16 @@
 use full_palette::{GREEN_500, GREY};
+use image::RgbImage;
 use plotters::prelude::*;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
-use image::imageops::FilterType;
 
 use crate::prelude::*;
 use crate::cellular_automata::prelude::maze::*;
 
 #[wasm_bindgen(js_name = CA_MAZE)]
 pub struct Model {
-    cached_states: Vec<Lattice>,
-    maze_solver: MazeSolver,
-    fix_point: bool,
+    states: Vec<image::RgbImage>,
+    size: (u32, u32)
 }
 
 #[wasm_bindgen(js_name = CA_MAZE_Params)]
@@ -23,47 +22,57 @@ pub struct Params {
 #[wasm_bindgen(js_class = CA_MAZE)]
 impl Model {
     pub fn build(params: Params) -> Self {
-        Self {
-            cached_states: Vec::new(),
-            maze_solver: params.to_model(),
-            fix_point: false
-        }
+        let solver = params.to_model();
+        let mut last_state = None;
+        let last_state = &mut last_state;
+        let states: Vec<_> = 
+            solver.take_while(move |curr_state| {
+                match last_state {
+                    Some(last_state) if last_state == curr_state => {
+                        false
+                    },
+                    _ => {
+                        *last_state = Some(curr_state.clone());
+                        true
+                    },
+                }
+            })
+            .map(|lattice| Self::lattice_to_image(&lattice))
+            .collect();
+
+        let size = (states[0].width(), states[0].height());
+        Self { states, size }
     }
 
-    pub fn last_step(&self) -> JsValue {
-        JsValue::from_f64((self.cached_states.len() - 1) as f64)
+    pub fn max_step(&self) -> JsValue {
+        JsValue::from_f64((self.states.len() - 1) as f64)
     }
 
     pub fn draw(&mut self, canvas: HtmlCanvasElement, step: u32) -> Result<(), JsValue> {
-        while (step as usize) >= self.cached_states.len() && !self.fix_point {
-            let next_state = self.maze_solver.next().unwrap();
-            
-            if let Some(last_state) = self.cached_states.last() {
-                if last_state == &next_state {
-                    self.fix_point = true;
-                } else {
-                    self.cached_states.push(next_state);
-                }
-            } else {
-                self.cached_states.push(next_state);
-            }
-        }   
+        canvas.set_width(self.size.0);
+        canvas.set_height(self.size.1);
 
-        if (step as usize) >= self.cached_states.len() {
-            draw_generic(Self::draw_function)(canvas, self.cached_states.last().unwrap())
-        } else {
-            draw_generic(Self::draw_function)(canvas, &self.cached_states[step as usize])
-        }
+        let step = usize::min(self.states.len() - 1, step as usize);
+        draw_generic(Self::draw_function)(canvas, &self.states[step])
     }
 
-    fn draw_function(canvas: HtmlCanvasElement, lattice: &Lattice) -> MyDrawResult<()> {
-        // generate a bitmap image
-        let size = lattice.size();
-        let mut image = image::DynamicImage::new(size.0, size.1, image::ColorType::Rgb8);
-        let image_rgb = image.as_mut_rgb8().unwrap();
+    fn draw_function(canvas: HtmlCanvasElement, image: &RgbImage) -> MyDrawResult<()> {
+        let image = BitMapElement::with_owned_buffer(
+            (0, 0), (image.width(), image.height()),
+            image.pixels().flat_map(|elem| elem.0.clone().into_iter()).collect()
+        ).unwrap();
 
-        image_rgb.fill(255);
-        for (y, row) in image_rgb.rows_mut().enumerate() {
+        draw_prelude(canvas)?.draw(&image)?;
+
+        Ok(())
+    }
+
+    fn lattice_to_image(lattice: &Lattice) -> image::RgbImage {
+        let size = lattice.size();
+        let mut image = image::RgbImage::new(size.0, size.1);
+
+        image.fill(255);
+        for (y, row) in image.rows_mut().enumerate() {
             for (x, cell) in row.enumerate() {
                 let color =
                     match lattice.get(x as u32, y as u32).unwrap() {
@@ -79,27 +88,7 @@ impl Model {
             }
         }
 
-        // fill the canvas
-        let (width, height) = (canvas.width(), canvas.height());
-        let min_resolution = u32::min(width, height);
-        let area = draw_prelude(canvas)?;
-        area.fill(&WHITE)?;
-
-        let area =
-            if width < height {
-                let diff_half = (height - width) as f32 / 2f32;
-                area.margin(diff_half, diff_half, 0f32, 0f32)
-            } else {
-                let diff_half = (width - height) as f32 / 2f32;
-                area.margin(0f32, 0f32, diff_half, diff_half)
-            };
-
-        let image = image.resize_exact(min_resolution, min_resolution, FilterType::Nearest);
-        let image = BitMapElement::with_ref((0, 0), (min_resolution, min_resolution), image.as_bytes()).unwrap();
-
-        area.draw(&image)?;
-
-        Ok(())
+        image
     }
 }
 

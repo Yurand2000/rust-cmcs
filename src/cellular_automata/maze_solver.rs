@@ -92,6 +92,7 @@ impl Lattice {
     }
 }
 
+#[derive(Clone)]
 pub struct MazeSolver {
     maze: Lattice,
 
