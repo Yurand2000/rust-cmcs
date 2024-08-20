@@ -1,8 +1,7 @@
 use plotters::prelude::*;
 use rand::{Rng, SeedableRng};
 use wasm_bindgen::prelude::*;
-use web_sys::HtmlCanvasElement;
-use image::imageops::FilterType;
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, ImageData};
 
 use crate::prelude::*;
 use crate::cellular_automata::prelude::{*, elementary::*};
@@ -24,48 +23,36 @@ pub struct Params {
 #[wasm_bindgen(js_class = CA_ELEM)]
 impl Model {
     pub fn draw(canvas: HtmlCanvasElement, params: Params) -> Result<(), JsValue> {
-        draw_generic(Self::draw_function)(canvas, params)
-    }
-
-    fn draw_function(canvas: HtmlCanvasElement, params: Params) -> MyDrawResult<()> {
         // run the simulation
-        let max_time = params.max_time;
+        let max_time = u32::min(params.max_time, params.resolution);
         let resolution = params.resolution;
         let model = params.to_model();
         let simulation = Simulation::new(model)
             .time_limit(max_time);
 
-        // generate a bitmap image
-        let mut image = image::DynamicImage::new(resolution, resolution, image::ColorType::Rgb8);
-        let image_rgb = image.as_mut_rgb8().unwrap();
+        // create the image
+        let mut image = image::RgbaImage::new(resolution, resolution);
 
-        image_rgb.fill(255);
-        for ((_, lattice), row) in simulation.zip(image_rgb.rows_mut()) {
+        image.fill(255);
+        for ((_, lattice), row) in simulation.zip(image.rows_mut()) {
             for (active, cell) in lattice.into_iter().zip(row) {
-                let color = if active { YELLOW } else { BLUE };
-                cell.0 = [color.0, color.1, color.2];
+                let color = if active { YELLOW } else { BLUE };                
+                cell.0 = [color.0, color.1, color.2, 255];
             }
         }
 
         // fill the canvas
-        let (width, height) = (canvas.width(), canvas.height());
-        let min_resolution = u32::min(width, height);
-        let area = draw_prelude(canvas)?;
-        area.fill(&WHITE)?;
+        let image = ImageData::new_with_u8_clamped_array_and_sh(
+            wasm_bindgen::Clamped(&image),
+            resolution, 
+            resolution
+        )?;
 
-        let area =
-            if width < height {
-                let diff_half = (height - width) as f32 / 2f32;
-                area.margin(diff_half, diff_half, 0f32, 0f32)
-            } else {
-                let diff_half = (width - height) as f32 / 2f32;
-                area.margin(0f32, 0f32, diff_half, diff_half)
-            };
+        canvas.set_width(resolution);
+        canvas.set_height(resolution);
 
-        let image = image.resize_exact(min_resolution, min_resolution, FilterType::Nearest);
-        let image = BitMapElement::with_ref((0, 0), (min_resolution, min_resolution), image.as_bytes()).unwrap();
-
-        area.draw(&image)?;
+        let context: CanvasRenderingContext2d = canvas.get_context("2d")?.ok_or(format!(""))?.dyn_into()?;
+        context.put_image_data(&image, 0f64, 0f64)?;
 
         Ok(())
     }

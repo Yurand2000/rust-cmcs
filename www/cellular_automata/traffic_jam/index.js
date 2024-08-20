@@ -1,7 +1,8 @@
 class Model {}
 class Params {}
 
-const canvas = document.getElementById("canvas");
+const image = document.getElementById("image");
+const canvas = document.createElement("canvas");
 const status = document.getElementById("status");
 const canvas_text = document.getElementById("canvas_text");
 
@@ -40,14 +41,14 @@ function setupUI() {
 /** Setup canvas to properly handle high DPI and redraw current plot. */
 function setupCanvas() {
 	const dpr = window.devicePixelRatio || 1.0;
-    const aspectRatio = canvas.width / canvas.height;
-    var size = canvas.parentNode.offsetWidth * 0.8;
-    if (size < 600)
-        size = 600;
-    canvas.style.width = size + "px";
-    canvas.style.height = size / aspectRatio + "px";
-    canvas.width = size;
-    canvas.height = size / aspectRatio;
+    const aspectRatio = image.width / image.height;
+    var size = image.parentNode.offsetWidth * 0.8;
+    if (size < 400)
+        size = 400;
+    image.style.width = size + "px";
+    image.style.height = size / aspectRatio + "px";
+    image.width = size;
+    image.height = size / aspectRatio;
     updatePlot();
 }
 
@@ -63,6 +64,7 @@ function updatePlot() {
         .boundary(boundary_condition.value)
         .seed(seed.value);
     chart = Model.draw(canvas, params);
+    image.src = canvas.toDataURL("image/png");
     canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
         `Grid Size: ${resolution.value}, ` +
         `Congestion: ${congestion.value}`;
