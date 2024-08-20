@@ -37,7 +37,7 @@ impl Model {
                     },
                 }
             })
-            .map(|lattice| Self::lattice_to_image(&lattice))
+            .map(|lattice| Self::maze_to_image(&lattice))
             .collect();
 
         let size = (states[0].width(), states[0].height());
@@ -67,15 +67,15 @@ impl Model {
         Ok(())
     }
 
-    fn lattice_to_image(lattice: &Lattice) -> image::RgbImage {
-        let size = lattice.size();
+    fn maze_to_image(maze: &Maze) -> image::RgbImage {
+        let size = maze.size();
         let mut image = image::RgbImage::new(size.0, size.1);
 
         image.fill(255);
         for (y, row) in image.rows_mut().enumerate() {
             for (x, cell) in row.enumerate() {
                 let color =
-                    match lattice.get(x as u32, y as u32).unwrap() {
+                    match maze.get(x as u32, y as u32).unwrap() {
                         Cell::Wall => &GREY,
                         Cell::NotVisited => &WHITE,
                         Cell::Visited { len } if *len == 0 => &RED,
@@ -109,6 +109,6 @@ impl Params {
     }
 
     fn to_model(self) -> MazeSolver {
-        MazeSolver::new(Lattice::from_string(&self.maze).unwrap())
+        MazeSolver::from_string(&self.maze).unwrap()
     }
 }

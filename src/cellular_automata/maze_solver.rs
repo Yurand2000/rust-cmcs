@@ -1,3 +1,5 @@
+use crate::cellular_automata::prelude::automaton_2d::*;
+
 #[derive(Clone)]
 #[derive(PartialEq, Eq)]
 pub enum Cell {
@@ -8,14 +10,25 @@ pub enum Cell {
     Backtrace{ len: u32 }
 }
 
-#[derive(Clone)]
-#[derive(PartialEq, Eq)]
-pub struct Lattice {
-    cells: Vec<Cell>,
-    size: (u32, u32)
+pub struct Boundary;
+
+impl ToCell<Cell> for Boundary {
+    fn to_cell() -> Cell {
+        Cell::Wall
+    }
 }
 
-impl Lattice {
+pub type Maze = Lattice<Cell, VonNeumannNeighborhood, FixedBoundary<Cell, Boundary>>;
+pub struct MazeSolver(Automaton2D<Cell, VonNeumannNeighborhood, FixedBoundary<Cell, Boundary>, [Cell; 5]>);
+
+impl Clone for MazeSolver {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+impl MazeSolver
+{
     pub fn from_string(maze_str: &str) -> Option<Self> {
         use Cell::*;
 
@@ -26,7 +39,7 @@ impl Lattice {
             return None;
         }
 
-        let mut maze = Self::empty(size_x, size_y);
+        let mut maze = Lattice::fill(size_x, size_y, Cell::Wall);
         for (y, line) in maze_str.lines().enumerate() {
             for (x, ch) in line.chars().enumerate() {
                 let cell =
@@ -42,163 +55,82 @@ impl Lattice {
             }
         }
 
-        Some(maze)
+        let automaton = Automaton2D::new(maze, Self::automaton);
+
+        Some(Self(automaton))
     }
 
-    pub fn empty(size_x: u32, size_y: u32) -> Self {
-        Self {
-            cells: vec![Cell::Wall; (size_x * size_y) as usize],
-            size: (size_x, size_y),
-        }
-    }
-
-    pub fn size(&self) -> (u32, u32) {
-        self.size
-    }
-
-    pub fn get(&self, x: u32, y: u32) -> Option<&Cell> {
-        self.cells.get(self.get_index(x, y))
-    }
-
-    pub fn set(&mut self, x: u32, y: u32, new_state: Cell) -> bool {
-        let index = self.get_index(x, y);
-        let cell = self.cells.get_mut(index);
-        match cell {
-            Some(cell) => { *cell = new_state; true },
-            None => false,
-        }
-    }
-
-    fn get_index(&self, x: u32, y: u32) -> usize {
-        (x + y * self.size.0) as usize
-    }
-    
-    fn get_unchecked(&self, x: u32, y: u32) -> Cell {
-        let index = self.get_index(x, y);
-        self.cells[index].clone()
-    }
-
-    fn get_neighbors(&self, x: u32, y: u32) -> Option<[Cell; 4]> {
-        if x >= self.size.0 || y >= self.size.1 {
-            return None;
-        }
-
-        let top = if y == 0 { Cell::Wall } else { self.get_unchecked(x, y - 1) };
-        let bottom = if y + 1 == self.size.1 { Cell::Wall } else { self.get_unchecked(x, y + 1) };
-        let left = if x == 0 { Cell::Wall } else { self.get_unchecked(x - 1, y) };
-        let right = if x + 1 == self.size.0 { Cell::Wall } else { self.get_unchecked(x + 1, y) };
-
-        Some([top, right, bottom, left])
-    }
-}
-
-#[derive(Clone)]
-pub struct MazeSolver {
-    maze: Lattice,
-
-    state: Option<Lattice>,
-}
-
-impl MazeSolver {
-    pub fn new(maze: Lattice) -> Self {
-        Self { maze, state: None }
-    }
-
-    fn step(state: Lattice) -> Lattice {
+    fn automaton(neighborhood: &[Cell; 5]) -> Cell {
         use Cell::*;
 
-        let mut next_state = Lattice::empty(state.size.0, state.size.1);
+        let cell = &neighborhood[2];
+        let neighbors = neighborhood[0..2].iter().chain(neighborhood[3..].iter());
 
-        for x in 0..next_state.size.0 {
-            for y in 0..next_state.size.1 {
-                let cell = state.get(x, y).unwrap();
+        match cell {
+            NotVisited => {
+                let neighbor_visited_best =
+                    neighbors.fold(None, |acc, cell| {
+                        if let Visited { len } = cell {
+                            Some(acc.map_or(*len, |best_len| u32::min(best_len, *len)))
+                        } else {
+                            acc
+                        }
+                    });
 
-                if *cell == Wall {
-                    next_state.set(x, y, Wall);
+                if let Some(len) = neighbor_visited_best {
+                    Visited { len: len + 1 }
                 } else {
-                    let neighbors = state.get_neighbors(x, y).unwrap().into_iter();
-
-                    let next_cell = match cell {
-                        NotVisited => {
-                            let neighbor_visited_best =
-                                neighbors.fold(None, |acc, cell| {
-                                    if let Visited { len } = cell {
-                                        Some(acc.map_or(len, |best_len| u32::min(best_len, len)))
-                                    } else {
-                                        acc
-                                    }
-                                });
-
-                            if let Some(len) = neighbor_visited_best {
-                                Visited { len: len + 1 }
-                            } else {
-                                NotVisited
-                            }
-                        },
-                        Visited { len } => {
-                            let neighbor_backtrace_best =
-                                neighbors.fold(None, |acc, cell| {
-                                    if let Backtrace { len } = cell {
-                                        Some(acc.map_or(len, |best_len| u32::min(best_len, len)))
-                                    } else {
-                                        acc
-                                    }
-                                });
-                            
-                            if let Some(blen) = neighbor_backtrace_best {
-                                if *len >= blen {
-                                    Visited { len: *len }
-                                } else {
-                                    Backtrace { len: *len }
-                                }
-                            } else {
-                                Visited { len: *len }
-                            }
-                        },
-                        End => {
-                            let neighbor_visited_best =
-                                neighbors.fold(None, |acc, cell| {
-                                    if let Visited { len } = cell {
-                                        Some(acc.map_or(len, |best_len| u32::min(best_len, len)))
-                                    } else {
-                                        acc
-                                    }
-                                });
-
-                            if let Some(len) = neighbor_visited_best {
-                                Backtrace { len: len + 1 }
-                            } else {
-                                End
-                            }
-                        },
-                        Backtrace { len } => Backtrace { len: *len },
-                        Wall => panic!(),
-                    };
-
-                    next_state.set(x, y, next_cell);
+                    NotVisited
                 }
-            }
-        }
+            },
+            Visited { len } => {
+                let neighbor_backtrace_best =
+                    neighbors.fold(None, |acc, cell| {
+                        if let Backtrace { len } = cell {
+                            Some(acc.map_or(*len, |best_len| u32::min(best_len, *len)))
+                        } else {
+                            acc
+                        }
+                    });
+                
+                if let Some(blen) = neighbor_backtrace_best {
+                    if *len >= blen {
+                        Visited { len: *len }
+                    } else {
+                        Backtrace { len: *len }
+                    }
+                } else {
+                    Visited { len: *len }
+                }
+            },
+            End => {
+                let neighbor_visited_best =
+                    neighbors.fold(None, |acc, cell| {
+                        if let Visited { len } = cell {
+                            Some(acc.map_or(*len, |best_len| u32::min(best_len, *len)))
+                        } else {
+                            acc
+                        }
+                    });
 
-        next_state
+                if let Some(len) = neighbor_visited_best {
+                    Backtrace { len: len + 1 }
+                } else {
+                    End
+                }
+            },
+            Backtrace { len } => Backtrace { len: *len },
+            Wall => Wall,
+        }
     }
 }
 
-impl Iterator for MazeSolver {
-    type Item = Lattice;
+impl Iterator for MazeSolver
+{
+    type Item = Maze;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let state = std::mem::take(&mut self.state);
-        match state {
-            Some(state) => {
-                self.state = Some(Self::step(state));
-                self.state.clone()
-            },
-            None => {
-                self.state = Some(self.maze.clone());
-                self.state.clone()
-            },
-        }
+        self.0.next()
     }
 }
 
