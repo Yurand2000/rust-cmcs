@@ -102,6 +102,7 @@ impl Params {
         self.maze =
             match str {
                 "maze0" => mazes::MAZE0,
+                "maze1" => mazes::MAZE1,
                 _ => "",
             };
         self
