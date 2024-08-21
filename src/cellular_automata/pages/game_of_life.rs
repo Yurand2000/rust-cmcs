@@ -1,33 +1,42 @@
-use full_palette::{GREEN_500, GREY};
 use image::RgbImage;
 use plotters::prelude::*;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 
 use crate::prelude::*;
-use crate::cellular_automata::prelude::maze::*;
+use crate::cellular_automata::prelude::game_of_life::*;
 
-#[wasm_bindgen(js_name = CA_MAZE)]
+#[wasm_bindgen(js_name = CA_GOL)]
 pub struct Model {
     states: Vec<image::RgbImage>,
     size: (u32, u32)
 }
 
-#[wasm_bindgen(js_name = CA_MAZE_Params)]
+#[wasm_bindgen(js_name = CA_GOL_Params)]
 #[derive(Default)]
 pub struct Params {
-    maze: &'static str,
+    state: &'static str,
+    max_time: u32,
+    fixed_boundary: bool,
 }
 
-#[wasm_bindgen(js_class = CA_MAZE)]
+#[wasm_bindgen(js_class = CA_GOL)]
 impl Model {
     pub fn build(params: Params) -> Result<Model, JsValue> {
-        let solver = params.to_model()?;
+        let max_time = params.max_time;
+        let solver: Box<dyn Iterator<Item = Result<State, String>>> = 
+            if params.fixed_boundary {
+                Box::new(params.to_model_fixed_boundary()?)
+            } else {
+                Box::new(params.to_model_periodic_boundary()?)
+            };
+
         let mut last_state = None;
         let mut error = false;
         let last_state = &mut last_state;
         let error = &mut error;
         let states: Vec<_> = solver
+            .take(max_time as usize)
             .take_while(move |curr_state| {
                 if *error {
                     false
@@ -54,7 +63,7 @@ impl Model {
             .try_fold::<_, _, Result<_, String>>(Vec::new(), |mut acc, curr_state| {
                 let curr_state = curr_state?;
 
-                acc.push(Self::maze_to_image(&curr_state));
+                acc.push(Self::state_to_image(&curr_state));
                 Ok(acc)
             })
             .map_err(|err| JsValue::from_str(&err))?;
@@ -86,21 +95,17 @@ impl Model {
         Ok(())
     }
 
-    fn maze_to_image(maze: &Maze) -> image::RgbImage {
-        let size = maze.size();
+    fn state_to_image(state: &State) -> image::RgbImage {
+        let size = state.size();
         let mut image = image::RgbImage::new(size.0, size.1);
 
         image.fill(255);
         for (y, row) in image.rows_mut().enumerate() {
             for (x, cell) in row.enumerate() {
                 let color =
-                    match maze.get(x as u32, y as u32).unwrap() {
-                        Cell::Wall => &GREY,
-                        Cell::NotVisited => &WHITE,
-                        Cell::Visited { len } if *len == 0 => &RED,
-                        Cell::Visited { .. } => &BLUE,
-                        Cell::End => &GREEN_500,
-                        Cell::Backtrace { .. } => &GREEN,
+                    match state.get(x as u32, y as u32).unwrap() {
+                        true => &BLUE,
+                        false => &WHITE,
                     };
                 
                 cell.0 = [color.0, color.1, color.2];
@@ -111,24 +116,40 @@ impl Model {
     }
 }
 
-#[wasm_bindgen(js_class = CA_MAZE_Params)]
+#[wasm_bindgen(js_class = CA_GOL_Params)]
 impl Params {
     pub fn builder() -> Self {
         Self { ..Default::default()}
     }
 
-    pub fn maze(mut self, str: &str) -> Self {
-        self.maze =
+    pub fn max_time(mut self, max_time: u32) -> Self {
+        self.max_time = max_time;
+        self
+    }
+
+    pub fn state(mut self, str: &str) -> Self {
+        (self.state, self.fixed_boundary) =
             match str {
-                "maze0" => mazes::MAZE0,
-                "maze1" => mazes::MAZE1,
-                _ => "",
+                "still" => (states::STILL, true),
+                "oscillators" => (states::OSCILLATORS, true),
+                "pulsar" => (states::PULSAR, true),
+                "glider" => (states::GLIDER, false),
+                "lwss" => (states::LWSS, false),
+                "diehard" => (states::DIEHARD, true),
+                "glider_gun" => (states::GLIDER_GUN, false),
+                "and_gate" => (states::AND_GATE, false),
+                _ => ("", true),
             };
         self
     }
 
-    fn to_model(self) -> Result<MazeSolver, JsValue> {
-        MazeSolver::from_string(&self.maze)
-            .ok_or(JsValue::from_str("Maze string parse error"))
+    fn to_model_fixed_boundary(self) -> Result<GameOfLife<BoundaryFixed>, JsValue> {
+        GameOfLife::from_string(&self.state)
+            .ok_or(JsValue::from_str("State string parse error"))
+    }
+
+    fn to_model_periodic_boundary(self) -> Result<GameOfLife<BoundaryPeriodic>, JsValue> {
+        GameOfLife::from_string(&self.state)
+            .ok_or(JsValue::from_str("State string parse error"))
     }
 }

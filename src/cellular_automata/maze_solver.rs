@@ -18,7 +18,7 @@ impl ToCell<Cell> for Boundary {
     }
 }
 
-pub type Maze = Lattice<Cell, VonNeumannNeighborhood, FixedBoundary<Cell, Boundary>>;
+pub type Maze = Lattice<Cell>;
 pub struct MazeSolver(Automaton2D<Cell, VonNeumannNeighborhood, FixedBoundary<Cell, Boundary>, [Cell; 5]>);
 
 impl Clone for MazeSolver {
@@ -127,7 +127,7 @@ impl MazeSolver
 
 impl Iterator for MazeSolver
 {
-    type Item = Maze;
+    type Item = Result<Maze, String>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next()
