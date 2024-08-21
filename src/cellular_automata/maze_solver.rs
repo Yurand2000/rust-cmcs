@@ -19,7 +19,7 @@ impl ToCell<Cell> for Boundary {
 }
 
 pub type Maze = Lattice<Cell>;
-pub struct MazeSolver(Automaton2D<Cell, VonNeumannNeighborhood, FixedBoundary<Cell, Boundary>, [Cell; 5]>);
+pub struct MazeSolver(Automaton2D<Cell, VonNeumannNeighborhood, FixedBoundary<Cell, Boundary>, [Cell; 5], ()>);
 
 impl Clone for MazeSolver {
     fn clone(&self) -> Self {
@@ -55,12 +55,12 @@ impl MazeSolver
             }
         }
 
-        let automaton = Automaton2D::new(maze, Self::automaton);
+        let automaton = Automaton2D::new(maze, (), Self::automaton);
 
         Some(Self(automaton))
     }
 
-    fn automaton(neighborhood: &[Cell; 5]) -> Cell {
+    fn automaton(neighborhood: &[Cell; 5], _: &mut ()) -> Cell {
         use Cell::*;
 
         let cell = &neighborhood[2];

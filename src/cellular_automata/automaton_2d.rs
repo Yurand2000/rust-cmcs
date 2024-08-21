@@ -21,7 +21,7 @@ pub struct Lattice<C>
 impl<C> Lattice<C>
     where C: Clone + PartialEq + Eq
 {
-    pub fn from_fn(size_x: u32, size_y: u32, fun: impl Fn(u32, u32) -> Result<C, String>) -> Result<Self, String> {
+    pub fn from_fn(size_x: u32, size_y: u32, mut fun: impl FnMut(u32, u32) -> Result<C, String>) -> Result<Self, String> {
         let mut cells = Vec::with_capacity((size_x * size_y) as usize);
 
         for y in 0..size_y {
@@ -78,8 +78,8 @@ impl<C> Lattice<C>
 
 
 
-impl<C, B, NN> AutomatonMachine2D<C, VonNeumannNeighborhood, FixedBoundary<C, B>, NN>
-    where C: Clone + PartialEq + Eq, B: ToCell<C>
+impl<C, B, NN, S> AutomatonMachine2D<C, VonNeumannNeighborhood, FixedBoundary<C, B>, NN, S>
+    where C: Clone + PartialEq + Eq, S: Clone, B: ToCell<C>
 {
     fn get_neighbors(lattice: &Lattice<C>, x: u32, y: u32) -> Result<[C; 5], String> {
         if x >= lattice.size.0 || y >= lattice.size.1 {
@@ -98,8 +98,8 @@ impl<C, B, NN> AutomatonMachine2D<C, VonNeumannNeighborhood, FixedBoundary<C, B>
     }
 }
 
-impl<C, NN> AutomatonMachine2D<C, VonNeumannNeighborhood, PeriodicBoundary, NN>
-    where C: Clone + PartialEq + Eq
+impl<C, NN, S> AutomatonMachine2D<C, VonNeumannNeighborhood, PeriodicBoundary, NN, S>
+    where C: Clone + PartialEq + Eq, S: Clone
 {
     fn get_neighbors(lattice: &Lattice<C>, x: u32, y: u32) -> Result<[C; 5], String> {
         if x >= lattice.size.0 || y >= lattice.size.1 {
@@ -118,8 +118,8 @@ impl<C, NN> AutomatonMachine2D<C, VonNeumannNeighborhood, PeriodicBoundary, NN>
     }
 }
 
-impl<C, B, NN> AutomatonMachine2D<C, MooreNeighborhood, FixedBoundary<C, B>, NN>
-    where C: Clone + PartialEq + Eq, B: ToCell<C>
+impl<C, B, NN, S> AutomatonMachine2D<C, MooreNeighborhood, FixedBoundary<C, B>, NN, S>
+    where C: Clone + PartialEq + Eq, S: Clone, B: ToCell<C>
 {
     fn get_neighbors(lattice: &Lattice<C>, x: u32, y: u32) -> Result<[C; 9], String> {
         if x >= lattice.size.0 || y >= lattice.size.1 {
@@ -164,8 +164,8 @@ impl<C, B, NN> AutomatonMachine2D<C, MooreNeighborhood, FixedBoundary<C, B>, NN>
     }
 }
 
-impl<C, NN> AutomatonMachine2D<C, MooreNeighborhood, PeriodicBoundary, NN>
-    where C: Clone + PartialEq + Eq
+impl<C, NN, S> AutomatonMachine2D<C, MooreNeighborhood, PeriodicBoundary, NN, S>
+    where C: Clone + PartialEq + Eq, S: Clone
 {
     fn get_neighbors(lattice: &Lattice<C>, x: u32, y: u32) -> Result<[C; 9], String> {
         if x >= lattice.size.0 || y >= lattice.size.1 {
@@ -210,108 +210,109 @@ impl<C, NN> AutomatonMachine2D<C, MooreNeighborhood, PeriodicBoundary, NN>
     }
 }
 
-trait AutomatonMachine<C>
-    where C: Clone + PartialEq + Eq
+trait AutomatonMachine<C, S>
+    where C: Clone + PartialEq + Eq, S: Clone
 {
-    fn step(&self, state: Lattice<C>) -> Result<Lattice<C>, String>;
+    fn step(&self, lattice: Lattice<C>, state: &mut S) -> Result<Lattice<C>, String>;
 }
 
-struct AutomatonMachine2D<C, N, B, NN>
-    where C: Clone + PartialEq + Eq
+struct AutomatonMachine2D<C, N, B, NN, S>
+    where C: Clone + PartialEq + Eq, S: Clone
 {
-    automaton: Rc<dyn Fn(&NN) -> C>,
-    _phantom: PhantomData<(C, N, B)>,
+    automaton: Rc<dyn Fn(&NN, &mut S) -> C>,
+    _phantom: PhantomData<(C, N, B, S)>,
 }
 
-impl<C, N, B, F> Clone for AutomatonMachine2D<C, N, B, F>
-    where C: Clone + PartialEq + Eq
+impl<C, N, B, NN, S> Clone for AutomatonMachine2D<C, N, B, NN, S>
+    where C: Clone + PartialEq + Eq, S: Clone
 {
     fn clone(&self) -> Self {
         Self { automaton: self.automaton.clone(), _phantom: self._phantom }
     }
 }
 
-impl<C, B> AutomatonMachine<C> for AutomatonMachine2D<C, VonNeumannNeighborhood, FixedBoundary<C, B>, [C; 5]>
-    where C: Clone + PartialEq + Eq, B: ToCell<C>
+impl<C, S, B> AutomatonMachine<C, S> for AutomatonMachine2D<C, VonNeumannNeighborhood, FixedBoundary<C, B>, [C; 5], S>
+    where C: Clone + PartialEq + Eq, S: Clone, B: ToCell<C>
 {
-    fn step(&self, state: Lattice<C>) -> Result<Lattice<C>, String> {
+    fn step(&self, lattice: Lattice<C>, state: &mut S) -> Result<Lattice<C>, String> {
         let automaton = self.automaton.clone();
-        Lattice::from_fn(state.size.0, state.size.1, move |x, y| {
-            let neighborhood = Self::get_neighbors(&state, x, y)?;
-            Ok(automaton(&neighborhood))
+        Lattice::from_fn(lattice.size.0, lattice.size.1, move |x, y| {
+            let neighborhood = Self::get_neighbors(&lattice, x, y)?;
+            Ok(automaton(&neighborhood, state))
         })
     }
 }
 
-impl<C> AutomatonMachine<C> for AutomatonMachine2D<C, VonNeumannNeighborhood, PeriodicBoundary, [C; 5]>
-    where C: Clone + PartialEq + Eq
+impl<C, S> AutomatonMachine<C, S> for AutomatonMachine2D<C, VonNeumannNeighborhood, PeriodicBoundary, [C; 5], S>
+    where C: Clone + PartialEq + Eq, S: Clone
 {
-    fn step(&self, state: Lattice<C>) -> Result<Lattice<C>, String> {
+    fn step(&self, lattice: Lattice<C>, state: &mut S) -> Result<Lattice<C>, String> {
         let automaton = self.automaton.clone();
-        Lattice::from_fn(state.size.0, state.size.1, move |x, y| {
-            let neighborhood = Self::get_neighbors(&state, x, y)?;
-            Ok(automaton(&neighborhood))
+        Lattice::from_fn(lattice.size.0, lattice.size.1, move |x, y| {
+            let neighborhood = Self::get_neighbors(&lattice, x, y)?;
+            Ok(automaton(&neighborhood, state))
         })
     }
 }
 
-impl<C, B> AutomatonMachine<C> for AutomatonMachine2D<C, MooreNeighborhood, FixedBoundary<C, B>, [C; 9]>
-    where C: Clone + PartialEq + Eq, B: ToCell<C>
+impl<C, S, B> AutomatonMachine<C, S> for AutomatonMachine2D<C, MooreNeighborhood, FixedBoundary<C, B>, [C; 9], S>
+    where C: Clone + PartialEq + Eq, S: Clone, B: ToCell<C>
 {
-    fn step(&self, state: Lattice<C>) -> Result<Lattice<C>, String> {
+    fn step(&self, lattice: Lattice<C>, state: &mut S) -> Result<Lattice<C>, String> {
         let automaton = self.automaton.clone();
-        Lattice::from_fn(state.size.0, state.size.1, move |x, y| {
-            let neighborhood = Self::get_neighbors(&state, x, y)?;
-            Ok(automaton(&neighborhood))
+        Lattice::from_fn(lattice.size.0, lattice.size.1, move |x, y| {
+            let neighborhood = Self::get_neighbors(&lattice, x, y)?;
+            Ok(automaton(&neighborhood, state))
         })
     }
 }
 
-impl<C> AutomatonMachine<C> for AutomatonMachine2D<C, MooreNeighborhood, PeriodicBoundary, [C; 9]>
-    where C: Clone + PartialEq + Eq
+impl<C, S> AutomatonMachine<C, S> for AutomatonMachine2D<C, MooreNeighborhood, PeriodicBoundary, [C; 9], S>
+    where C: Clone + PartialEq + Eq, S: Clone
 {
-    fn step(&self, state: Lattice<C>) -> Result<Lattice<C>, String> {
+    fn step(&self, lattice: Lattice<C>, state: &mut S) -> Result<Lattice<C>, String> {
         let automaton = self.automaton.clone();
-        Lattice::from_fn(state.size.0, state.size.1, move |x, y| {
-            let neighborhood = Self::get_neighbors(&state, x, y)?;
-            Ok(automaton(&neighborhood))
+        Lattice::from_fn(lattice.size.0, lattice.size.1, move |x, y| {
+            let neighborhood = Self::get_neighbors(&lattice, x, y)?;
+            Ok(automaton(&neighborhood, state))
         })
     }
 }
 
-pub struct Automaton2D<C, N, B, NN>
-    where C: Clone + PartialEq + Eq
+pub struct Automaton2D<C, N, B, NN, S>
+    where C: Clone + PartialEq + Eq, S: Clone
 {
     lattice: Lattice<C>,
-    automaton: AutomatonMachine2D<C, N, B, NN>,
+    automaton: AutomatonMachine2D<C, N, B, NN, S>,
+    global_state: S,
 
     state: Option<Lattice<C>>,
     error: bool,
 }
 
-impl<C, N, B, NN> Clone for  Automaton2D<C, N, B, NN>
-    where C: Clone + PartialEq + Eq
+impl<C, N, B, NN, S> Clone for  Automaton2D<C, N, B, NN, S>
+    where C: Clone + PartialEq + Eq, S: Clone
 {
     fn clone(&self) -> Self {
-        Self { lattice: self.lattice.clone(), automaton: self.automaton.clone(), state: self.state.clone(), error: self.error }
+        Self { lattice: self.lattice.clone(), automaton: self.automaton.clone(), global_state: self.global_state.clone(), state: self.state.clone(), error: self.error }
     }
 }
 
-impl<C, N, B, NN> Automaton2D<C, N, B, NN>
-    where C: Clone + PartialEq + Eq
+impl<C, N, B, NN, S> Automaton2D<C, N, B, NN, S>
+    where C: Clone + PartialEq + Eq, S: Clone
 {
-    pub fn new(lattice: Lattice<C>, automaton: impl Fn(&NN) -> C + 'static) -> Self {
+    pub fn new(lattice: Lattice<C>, global_state: S, automaton: impl for<'a, 'b> Fn(&'a NN, &'b mut S) -> C + 'static) -> Self {
         let automaton = AutomatonMachine2D {
             automaton: Rc::new(automaton),
             _phantom: PhantomData,
         };
 
-        Self { lattice, automaton, state: None, error: false }
+        Self { lattice, automaton, global_state, state: None, error: false }
     }
 }
 
-impl<C, N, B, F> Iterator for Automaton2D<C, N, B, F>
-    where C: Clone + PartialEq + Eq, AutomatonMachine2D<C, N, B, F>: AutomatonMachine<C>
+impl<C, N, B, NN, S> Iterator for Automaton2D<C, N, B, NN, S>
+    where C: Clone + PartialEq + Eq, S: Clone, AutomatonMachine2D<C, N, B, NN, S>: AutomatonMachine<C, S>
 {
     type Item = Result<Lattice<C>, String>;
 
@@ -323,7 +324,7 @@ impl<C, N, B, F> Iterator for Automaton2D<C, N, B, F>
         let state = std::mem::take(&mut self.state);
         match state {
             Some(state) => {
-                match self.automaton.step(state) {
+                match self.automaton.step(state, &mut self.global_state) {
                     Ok(new_state) => {
                         self.state = Some(new_state);
                         self.state.clone().map(|state| Ok(state))

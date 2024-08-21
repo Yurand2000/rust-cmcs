@@ -17,4 +17,5 @@ pub mod elementary_automaton;
 pub mod automaton_2d;
 pub mod maze_solver;
 pub mod game_of_life;
+pub mod forest_fire;
 pub mod common;

@@ -12,7 +12,7 @@ pub type BoundaryFixed = FixedBoundary<bool, Boundary>;
 pub type BoundaryPeriodic = PeriodicBoundary;
 
 pub type State = Lattice<bool>;
-pub struct GameOfLife<B>(Automaton2D<bool, MooreNeighborhood, B, [bool; 9]>);
+pub struct GameOfLife<B>(Automaton2D<bool, MooreNeighborhood, B, [bool; 9], ()>);
 
 impl<B> Clone for GameOfLife<B> {
     fn clone(&self) -> Self {
@@ -40,12 +40,12 @@ impl<B> GameOfLife<B> {
             }
         }
 
-        let automaton = Automaton2D::new(state, Self::automaton);
+        let automaton = Automaton2D::new(state, (), Self::automaton);
 
         Some(Self(automaton))
     }
 
-    fn automaton(neighborhood: &[bool; 9]) -> bool {
+    fn automaton(neighborhood: &[bool; 9], _: &mut ()) -> bool {
         let cell = neighborhood[4];
 
         let neighbors: u32 = neighborhood[..4].iter().chain(neighborhood[5..].iter())
