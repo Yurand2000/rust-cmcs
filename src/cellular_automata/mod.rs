@@ -3,6 +3,7 @@ pub mod pages {
     mod elementary_automaton;
     mod maze_solver;
     mod game_of_life;
+    mod forest_fire;
 }
 
 pub mod prelude {
@@ -10,6 +11,7 @@ pub mod prelude {
     pub use super::elementary_automaton as elementary;
     pub use super::maze_solver as maze;
     pub use super::game_of_life as game_of_life;
+    pub use super::forest_fire as forest_fire;
     pub use super::common::*;
 }
 

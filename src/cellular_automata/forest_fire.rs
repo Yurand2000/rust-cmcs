@@ -10,6 +10,14 @@ pub enum Cell {
     Empty
 }
 
+pub struct Boundary;
+
+impl ToCell<Cell> for Boundary {
+    fn to_cell() -> Cell {
+        Cell::Empty
+    }
+}
+
 pub type ForestLattice = Lattice<Cell>;
 
 #[derive(Clone)]
@@ -18,7 +26,7 @@ pub struct GlobalState {
 }
 
 #[derive(Clone)]
-pub struct ForestFireModel(Automaton2D<Cell, MooreNeighborhood, PeriodicBoundary, [Cell; 9], GlobalState>);
+pub struct ForestFireModel(Automaton2D<Cell, MooreNeighborhood, FixedBoundary<Cell, Boundary>, [Cell; 9], GlobalState>);
 
 impl ForestFireModel
 {
