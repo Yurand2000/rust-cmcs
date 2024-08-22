@@ -1,5 +1,3 @@
-use std::{f32::consts::E, fmt::format};
-
 use rand::{Rng, SeedableRng};
 
 use crate::cellular_automata::prelude::{*, block_automaton::*};
@@ -72,26 +70,33 @@ impl SandHourglassModel
         use Cell::*;
 
         let (tl, tr, bl, br) = (&neighborhood[0], &neighborhood[1], &neighborhood[2], &neighborhood[3]);
+        let distribution = rand_distr::Bernoulli::new(friction_probability).unwrap();
+        let rng = &mut global_state.rng;
 
         match (tl, tr, bl, br) {
             (Empty, Sand, Empty, Empty) => [Empty, Empty, Empty, Sand],
             (Empty, Sand, Empty, Sand) => [Empty, Empty, Sand, Sand],
-            (Empty, Sand, Empty, Wall) => [Empty, Empty, Sand, Wall],
+            (Empty, Sand, Empty, Wall) => {
+                if rng.sample(distribution) {
+                    [Empty, Sand, Empty, Wall]
+                } else {
+                    [Empty, Empty, Sand, Wall]
+                }
+            },
             (Empty, Sand, Sand, Empty) => [Empty, Empty, Sand, Sand],
             (Empty, Sand, Wall, Empty) => [Empty, Empty, Wall, Sand],
             (Sand, Empty, Empty, Empty) => [Empty, Empty, Sand, Empty],
             (Sand, Empty, Empty, Sand) => [Empty, Empty, Sand, Sand],
             (Sand, Empty, Empty, Wall) => [Empty, Empty, Sand, Wall],
             (Sand, Empty, Sand, Empty) => [Empty, Empty, Sand, Sand],
-            (Sand, Empty, Wall, Empty) => [Empty, Empty, Wall, Sand],
-            (Sand, Sand, Empty, Empty) => {
-                let distribution = rand_distr::Bernoulli::new(friction_probability).unwrap();
-                if global_state.rng.sample(distribution) {
-                    [Sand, Sand, Empty, Empty]
+            (Sand, Empty, Wall, Empty) => {
+                if rng.sample(distribution) {
+                    [Sand, Empty, Wall, Empty]
                 } else {
-                    [Empty, Empty, Sand, Sand]
+                    [Empty, Empty, Wall, Sand]
                 }
             },
+            (Sand, Sand, Empty, Empty) => [Empty, Empty, Sand, Sand],
             (Sand, Sand, Empty, Sand) => [Empty, Sand, Sand, Sand],
             (Sand, Sand, Empty, Wall) => [Empty, Sand, Sand, Wall],
             (Sand, Sand, Sand, Empty) => [Sand, Empty, Sand, Sand],
@@ -99,10 +104,22 @@ impl SandHourglassModel
             (Sand, Wall, Empty, Empty) => [Empty, Wall, Sand, Empty],
             (Sand, Wall, Empty, Sand) => [Empty, Wall, Sand, Sand],
             (Sand, Wall, Empty, Wall) => [Empty, Wall, Sand, Wall],
-            (Sand, Wall, Sand, Empty) => [Sand, Wall, Sand, Empty], //identity
+            (Sand, Wall, Sand, Empty) => {
+                if rng.sample(distribution) {
+                    [Sand, Wall, Sand, Empty]
+                } else {
+                    [Empty, Wall, Sand, Sand]
+                }
+            },
             (Sand, Wall, Wall, Empty) => [Sand, Wall, Wall, Empty], //identity
             (Wall, Sand, Empty, Empty) => [Wall, Empty, Empty, Sand],
-            (Wall, Sand, Empty, Sand) => [Wall, Sand, Empty, Sand], //identity
+            (Wall, Sand, Empty, Sand) => {
+                if rng.sample(distribution) {
+                    [Wall, Sand, Empty, Sand]
+                } else {
+                    [Wall, Empty, Sand, Sand]
+                }
+            },
             (Wall, Sand, Empty, Wall) => [Wall, Sand, Empty, Wall], //identity
             (Wall, Sand, Sand, Empty) => [Wall, Empty, Sand, Sand],
             (Wall, Sand, Wall, Empty) => [Wall, Empty, Wall, Sand],

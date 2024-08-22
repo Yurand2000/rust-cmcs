@@ -3,7 +3,7 @@ use crate::cellular_automata::prelude::*;
 
 #[derive(Clone)]
 struct BlockAutomatonState {
-    odd_step: bool
+    step: u8
 }
 
 struct BlockAutomatonMachine<C, B, NN, S>
@@ -21,62 +21,46 @@ impl<C, B, NN, S> Clone for BlockAutomatonMachine<C, B, NN, S>
     }
 }
 
-enum CellPosition {
-    TL, TR, BL, BR
-}
-
-
-impl<C, B, NN, S> BlockAutomatonMachine<C, B, NN, S>
-    where C: Clone + PartialEq + Eq, S: Clone
-{
-    fn to_cell_position(x: u32, y: u32, odd_step: bool) -> CellPosition {
-        let odd_step = odd_step as u32;
-        match ((x + odd_step) % 2, (y + odd_step) % 2) {
-            (0, 0) => CellPosition::TL,
-            (0, 1) => CellPosition::BL,
-            (1, 0) => CellPosition::TR,
-            (1, 1) => CellPosition::BR,
-            _ => panic!()
-        }
-    }
-}
-
 impl<C, S, B> BlockAutomatonMachine<C, FixedBoundary<C, B>, [C; 4], S>
     where C: Clone + PartialEq + Eq, S: Clone, B: ToCell<C>
 {
-    fn get_neighbors(lattice: &Lattice<C>, x: u32, y: u32, odd_step: bool) -> Result<[C; 4], String> {
-        let (max_x, max_y) = (lattice.size.0 - 1, lattice.size.1 - 1);
-        let pos = Self::to_cell_position(x, y, odd_step);
+    fn get_neighbors(lattice: &Lattice<C>, x: u32, y: u32, step: u8) -> Result<[C; 4], String> {
+        let (size_x, size_y) = (lattice.size.0, lattice.size.1);
 
-        match pos {
-            CellPosition::TL => {
-                let tl = lattice.get_result(x, y)?;
-                let tr = if x == max_x { B::to_cell() } else { lattice.get_result(x + 1, y)? };
-                let bl = if y == max_y { B::to_cell() } else { lattice.get_result(x, y + 1)? };
-                let br = if x == max_x && y == max_y { B::to_cell() } else { lattice.get_result(x + 1, y + 1)? };
+        match step {
+            0 => {  // top left
+                if x == size_x || y == size_y {
+                    Ok([B::to_cell(), B::to_cell(), B::to_cell(), B::to_cell()])
+                } else {
+                    let tl = lattice.get_result(x, y)?;
+                    let tr = lattice.get_result(x + 1, y)?;
+                    let bl = lattice.get_result(x, y + 1)?;
+                    let br = lattice.get_result(x + 1, y + 1)?;
+                    Ok([tl, tr, bl, br])
+                }
+            },
+            1 => {  // bottom right
+                let tl = if x == 0 || y == 0 { B::to_cell() } else { lattice.get_result(x - 1, y - 1)? };
+                let tr = if x == size_x || y == 0 { B::to_cell() } else { lattice.get_result(x, y - 1)? };
+                let bl = if x == 0 || y == size_y { B::to_cell() } else { lattice.get_result(x - 1, y)? };
+                let br = if x == size_x || y == size_y { B::to_cell() } else { lattice.get_result(x, y)? };
                 Ok([tl, tr, bl, br])
             },
-            CellPosition::TR => {
-                let tl = if x == 0 { B::to_cell() } else { lattice.get_result(x - 1, y)? };
-                let tr = lattice.get_result(x, y)?;
-                let bl = if x == 0 && y == max_y { B::to_cell() } else { lattice.get_result(x - 1, y + 1)? };
-                let br = if y == max_y { B::to_cell() } else { lattice.get_result(x, y + 1)? };
+            2 => {  // bottom left
+                let tl = if x == size_x || y == 0 { B::to_cell() } else { lattice.get_result(x, y - 1)? };
+                let tr = if x == size_x || y == 0 { B::to_cell() } else { lattice.get_result(x + 1, y - 1)? };
+                let bl = if x == size_x || y == size_y { B::to_cell() } else { lattice.get_result(x, y)? };
+                let br = if x == size_x || y == size_y { B::to_cell() } else { lattice.get_result(x + 1, y)? };
                 Ok([tl, tr, bl, br])
             },
-            CellPosition::BL => {
-                let tl = if y == 0 { B::to_cell() } else { lattice.get_result(x, y - 1)? };
-                let tr = if x == max_x && y == 0 { B::to_cell() } else { lattice.get_result(x + 1, y - 1)? };
-                let bl = lattice.get_result(x, y)?;
-                let br = if x == max_x { B::to_cell() } else { lattice.get_result(x + 1, y)? };
+            3 => {  // top right
+                let tl = if x == 0 || y == size_y { B::to_cell() } else { lattice.get_result(x - 1, y)? };
+                let tr = if x == size_x || y == size_y { B::to_cell() } else { lattice.get_result(x, y)? };
+                let bl = if x == 0 || y == size_y { B::to_cell() } else { lattice.get_result(x - 1, y + 1)? };
+                let br = if x == size_x || y == size_y { B::to_cell() } else { lattice.get_result(x, y + 1)? };
                 Ok([tl, tr, bl, br])
             },
-            CellPosition::BR => {
-                let tl = if x == 0 && y == 0 { B::to_cell() } else { lattice.get_result(x - 1, y - 1)? };
-                let tr = if y == 0 { B::to_cell() } else { lattice.get_result(x, y - 1)? };
-                let bl = if x == 0 { B::to_cell() } else { lattice.get_result(x - 1, y)? };
-                let br = lattice.get_result(x, y)?;
-                Ok([tl, tr, bl, br])
-            },
+            _ => panic!()
         }
     }
 }
@@ -84,39 +68,39 @@ impl<C, S, B> BlockAutomatonMachine<C, FixedBoundary<C, B>, [C; 4], S>
 impl<C, S> BlockAutomatonMachine<C, PeriodicBoundary, [C; 4], S>
     where C: Clone + PartialEq + Eq, S: Clone
 {
-    fn get_neighbors(lattice: &Lattice<C>, x: u32, y: u32, odd_step: bool) -> Result<[C; 4], String> {
+    fn get_neighbors(lattice: &Lattice<C>, x: u32, y: u32, step: u8) -> Result<[C; 4], String> {
         let (max_x, max_y) = (lattice.size.0 - 1, lattice.size.1 - 1);
-        let pos = Self::to_cell_position(x, y, odd_step);
 
-        match pos {
-            CellPosition::TL => {
+        match step {
+            0 => {  // top left
                 let tl = lattice.get_result(x, y)?;
                 let tr = if x == max_x { lattice.get_result(0, y)? } else { lattice.get_result(x + 1, y)? };
                 let bl = if y == max_y { lattice.get_result(x, 0)? } else { lattice.get_result(x, y + 1)? };
                 let br = if x == max_x && y == max_y { lattice.get_result(0, 0)? } else { lattice.get_result(x + 1, y + 1)? };
                 Ok([tl, tr, bl, br])
             },
-            CellPosition::TR => {
-                let tl = if x == 0 { lattice.get_result(max_x, y)? } else { lattice.get_result(x - 1, y)? };
-                let tr = lattice.get_result(x, y)?;
-                let bl = if x == 0 && y == max_y { lattice.get_result(max_x, 0)? } else { lattice.get_result(x - 1, y + 1)? };
-                let br = if y == max_y { lattice.get_result(x, 0)? } else { lattice.get_result(x, y + 1)? };
-                Ok([tl, tr, bl, br])
-            },
-            CellPosition::BL => {
-                let tl = if y == 0 { lattice.get_result(x, max_y)? } else { lattice.get_result(x, y - 1)? };
-                let tr = if x == max_x && y == 0 { lattice.get_result(0, max_y)? } else { lattice.get_result(x + 1, y - 1)? };
-                let bl = lattice.get_result(x, y)?;
-                let br = if x == max_x { lattice.get_result(0, y)? } else { lattice.get_result(x + 1, y)? };
-                Ok([tl, tr, bl, br])
-            },
-            CellPosition::BR => {
+            1 => {  // bottom right
                 let tl = if x == 0 && y == 0 { lattice.get_result(max_x, max_y)? } else { lattice.get_result(x - 1, y - 1)? };
                 let tr = if y == 0 { lattice.get_result(x, max_y)? } else { lattice.get_result(x, y - 1)? };
                 let bl = if x == 0 { lattice.get_result(max_x, y)? } else { lattice.get_result(x - 1, y)? };
                 let br = lattice.get_result(x, y)?;
                 Ok([tl, tr, bl, br])
             },
+            2 => {  // bottom left
+                let tl = if y == 0 { lattice.get_result(x, max_y)? } else { lattice.get_result(x, y - 1)? };
+                let tr = if y == 0 { lattice.get_result(x + 1, max_y)? } else { lattice.get_result(x + 1, y - 1)? };
+                let bl = lattice.get_result(x, y)?;
+                let br = lattice.get_result(x + 1, y)?;
+                Ok([tl, tr, bl, br])
+            },
+            3 => {  // top right
+                let tl = if y == 0 { lattice.get_result(max_x, y)? } else { lattice.get_result(x - 1, y)? };
+                let tr = lattice.get_result(x, y)?;
+                let bl = if y == 0 { lattice.get_result(max_x, y + 1)? } else { lattice.get_result(x - 1, y + 1)? };
+                let br = lattice.get_result(x, y + 1)?;
+                Ok([tl, tr, bl, br])
+            },
+            _ => panic!()
         }
     }
 }
@@ -126,28 +110,44 @@ impl<C, S, B> AutomatonMachine<C, (BlockAutomatonState, S)> for BlockAutomatonMa
 {
     fn step(&self, lattice: Lattice<C>, state: &mut (BlockAutomatonState, S)) -> Result<Lattice<C>, String> {
         let automaton = self.automaton.clone();
-        let odd_step = state.0.odd_step;
-        state.0.odd_step = !state.0.odd_step;
+        let step = state.0.step;
+        state.0.step = (state.0.step + 1) % 4;
 
         let mut new_lattice = lattice.clone();
         let (size_x, size_y) = (lattice.size.0, lattice.size.1);
         
-        for x in (0..lattice.size.0 + (odd_step as u32)).step_by(2) {
-            for y in (0..lattice.size.1 + (odd_step as u32)).step_by(2) {
-                let neighborhood = Self::get_neighbors(&lattice, x, y, odd_step)?;
+        for x in (0..=lattice.size.0).step_by(2) {
+            for y in (0..=lattice.size.1).step_by(2) {
+                let neighborhood = Self::get_neighbors(&lattice, x, y, step)?;
                 let (tl, tr, bl, br) = automaton(&neighborhood, &mut state.1).into();
 
-                if odd_step {
-                    if x != 0 && y != 0 { new_lattice.set(x - 1, y - 1, tl); };
-                    if x != size_x && y != 0 { new_lattice.set(x, y - 1, tr); };
-                    if x != 0 && y != size_y { new_lattice.set(x - 1, y, bl); };
-                    if x != size_x && y != size_y { new_lattice.set(x, y, br); };
-                } else {
-                    new_lattice.set(x, y, tl);
-                    new_lattice.set(x + 1, y, tr);
-                    new_lattice.set(x, y + 1, bl);
-                    new_lattice.set(x + 1, y + 1, br);
-                }
+                match step {
+                    0 => {  // top left
+                        if x != size_x && y != size_y { new_lattice.set(x, y, tl); };
+                        if x != size_x && y != size_y { new_lattice.set(x + 1, y, tr); };
+                        if x != size_x && y != size_y { new_lattice.set(x, y + 1, bl); };
+                        if x != size_x && y != size_y { new_lattice.set(x + 1, y + 1, br); };
+                    },
+                    1 => {  // bottom right
+                        if x != 0 && y != 0 { new_lattice.set(x - 1, y - 1, tl); };
+                        if x != size_x && y != 0 { new_lattice.set(x, y - 1, tr); };
+                        if x != 0 && y != size_y { new_lattice.set(x - 1, y, bl); };
+                        if x != size_x && y != size_y { new_lattice.set(x, y, br); };
+                    },
+                    2 => {  // bottom left
+                        if x != size_x && y != 0 { new_lattice.set(x, y - 1, tl); };
+                        if x != size_x && y != 0 { new_lattice.set(x + 1, y - 1, tr); };
+                        if x != size_x && y != size_y { new_lattice.set(x, y, bl); };
+                        if x != size_x && y != size_y { new_lattice.set(x + 1, y, br); };
+                    },
+                    3 => {  // top right
+                        if x != 0 && y != size_y { new_lattice.set(x - 1, y, tl); };
+                        if x != size_x && y != size_y { new_lattice.set(x, y, tr); };
+                        if x != 0 && y != size_y { new_lattice.set(x - 1, y + 1, bl); };
+                        if x != size_x && y != size_y { new_lattice.set(x, y + 1, br); };
+                    },
+                    _ => panic!(),
+                };
             }
         }
 
@@ -160,28 +160,44 @@ impl<C, S> AutomatonMachine<C, (BlockAutomatonState, S)> for BlockAutomatonMachi
 {
     fn step(&self, lattice: Lattice<C>, state: &mut (BlockAutomatonState, S)) -> Result<Lattice<C>, String> {
         let automaton = self.automaton.clone();
-        let odd_step = state.0.odd_step;
-        state.0.odd_step = !state.0.odd_step;
+        let step = state.0.step;
+        state.0.step = (state.0.step + 1) % 4;
 
         let mut new_lattice = lattice.clone();
         let (max_x, max_y) = (lattice.size.0 - 1, lattice.size.1 - 1);
 
         for x in (0..lattice.size.0).step_by(2) {
             for y in (0..lattice.size.1).step_by(2) {
-                let neighborhood = Self::get_neighbors(&lattice, x, y, odd_step)?;
+                let neighborhood = Self::get_neighbors(&lattice, x, y, step)?;
                 let (tl, tr, bl, br) = automaton(&neighborhood, &mut state.1).into();
 
-                if odd_step {
-                    if x == 0 && y == 0 { new_lattice.set(max_x, max_y, tl); } else { new_lattice.set(x - 1, y - 1, tl); };
-                    if y == 0 { new_lattice.set(x, max_y, tr); } else { new_lattice.set(x, y - 1, tr); };
-                    if x == 0 { new_lattice.set(max_x, y, bl); } else { new_lattice.set(x - 1, y, bl); };
-                    new_lattice.set(x, y, br);
-                } else {
-                    new_lattice.set(x, y, tl);
-                    new_lattice.set(x + 1, y, tr);
-                    new_lattice.set(x, y + 1, bl);
-                    new_lattice.set(x + 1, y + 1, br);
-                }
+                match step {
+                    0 => {  // top left
+                        new_lattice.set(x, y, tl);
+                        new_lattice.set(x + 1, y, tr);
+                        new_lattice.set(x, y + 1, bl);
+                        new_lattice.set(x + 1, y + 1, br);
+                    },
+                    1 => {  // bottom right
+                        if x != 0 && y != 0 { new_lattice.set(x - 1, y - 1, tl); } else { new_lattice.set(max_x, max_y, tl); };
+                        if y != 0 { new_lattice.set(x, y - 1, tr); } else { new_lattice.set(x, max_y, tr); };
+                        if x != 0 { new_lattice.set(x - 1, y, bl); } else { new_lattice.set(max_x, y, bl); };
+                        new_lattice.set(x, y, br);
+                    },
+                    2 => {  // bottom left
+                        if y != 0 { new_lattice.set(x, y - 1, tl); } else { new_lattice.set(x, max_y, tl); };
+                        if y != 0 { new_lattice.set(x + 1, y - 1, tr); } else { new_lattice.set(x + 1, max_y, tr); };
+                        new_lattice.set(x, y, bl);
+                        new_lattice.set(x + 1, y, br);
+                    },
+                    3 => {  // top right
+                        if x != 0 { new_lattice.set(x - 1, y, tl); } else { new_lattice.set(max_x, y, tl); };
+                        new_lattice.set(x, y, tr);
+                        if x != 0 { new_lattice.set(x - 1, y + 1, bl); } else { new_lattice.set(max_x, y + 1, bl); };
+                        new_lattice.set(x, y + 1, br);
+                    },
+                    _ => panic!(),
+                };
             }
         }
 
@@ -221,7 +237,7 @@ impl<C, B, NN, S> BlockAutomaton<C, B, NN, S>
             _phantom: PhantomData,
         };
 
-        Ok(Self { lattice, automaton, global_state: (BlockAutomatonState { odd_step: false }, global_state), state: None, error: false })
+        Ok(Self { lattice, automaton, global_state: (BlockAutomatonState { step: 0 }, global_state), state: None, error: false })
     }
 }
 

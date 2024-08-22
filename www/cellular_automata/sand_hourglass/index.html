@@ -7,7 +7,7 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
 		<script src="https://cdn.tailwindcss.com"></script>
-		<title>Probabilistic Forest Fire</title>        
+		<title>Sand with Friction</title>        
 	</head>
     <body>
         <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
@@ -15,20 +15,20 @@
             init();
 
             async function init() {
-                const [{CA_FF, CA_FF_Params, default: init}, {main, setup}] = await Promise.all([
+                const [{CA_SWF, CA_SWF_Params, default: init}, {main, setup}] = await Promise.all([
                     import("../../release/rust_cmcs.js"),
                     import("./index.js"),
                 ]);
 
                 await init();
-                setup(CA_FF, CA_FF_Params);
+                setup(CA_SWF, CA_SWF_Params);
                 main();
             }
         </script>
         <div class="flex bg-gray-200 items-center flex-col rounded-lg shadow m-8">
             <div class="flex items-center flex-col mb-4 mt-4 bg-white rounded-lg shadow m-4">
                 <h1 class="mt-4 text-5xl font-extrabold leading-none text-gray-900">
-                    Probabilistic Forest Fire
+                    Sand with Friction
                 </h1>
                 <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
                     Loading...
@@ -36,22 +36,18 @@
                 <img id="image" style="image-rendering: pixelated" class="items-center" src="" width="400" height="400"></img>
                 <div class="flex items-left flex-row m-4">
                     <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">
-                        <label for="start_state" class="block mb-2 text-sm font-medium text-gray-900">Forest Layout</label>
+                        <label for="start_state" class="block mb-2 text-sm font-medium text-gray-900">Layout</label>
                         <select id="start_state" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5:ring-blue-500:border-blue-500">
-                            <option value="64">64 x 64</option>
-                            <option value="128">128 x 128</option>
-                            <option value="256">256 x 256</option>
+                            <option value="hourglass">Hourglass</option>
                         </select>
-                        <label for="lightning_prob" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Lightning Probability</label>
-                        <input id="lightning_prob" type="range" min="0" max="0.001" value="0.0001" step="0.0001" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                        <label for="growing_prob" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Tree Growth Probability</label>
-                        <input id="growing_prob" type="range" min="0" max="0.01" value="0.001" step="0.001" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <label for="friction" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Friction</label>
+                        <input id="friction" type="range" min="0" max="1" value="0.8" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <label for="seed" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Simulation Seed</label>
                         <input id="seed" type="text" value="0" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"/>
                     </ul>
                     <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">
                         <label for="max_time" class="block mb-2 text-sm font-medium text-gray-900">Max Simulation Time</label>
-                        <input id="max_time" type="range" min="32" max="1024" value="32" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <input id="max_time" type="range" min="256" max="1024" value="256" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <label for="step" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Current Step</label>
                         <input id="step" type="range" min="0" max="512" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <div class="inline-flex mt-4 rounded-md shadow-sm" role="group">
