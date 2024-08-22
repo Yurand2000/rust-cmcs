@@ -97,6 +97,7 @@ impl Params {
         self.map =
             match map.as_str() {
                 "hourglass" => maps::HOURGLASS,
+                "hourglass_big" => maps::HOURGLASS_BIG,
                 _ => "",
             };
         
