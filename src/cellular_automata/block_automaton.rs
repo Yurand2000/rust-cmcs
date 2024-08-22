@@ -121,13 +121,44 @@ impl<C, S> BlockAutomatonMachine<C, PeriodicBoundary, [C; 4], S>
     }
 }
 
+impl<C, S, B> AutomatonMachine<C, (BlockAutomatonState, S)> for BlockAutomatonMachine<C, FixedBoundary<C, B>, [C; 4], S>
+    where C: Clone + PartialEq + Eq, S: Clone, B: ToCell<C>
+{
+    fn step(&self, lattice: Lattice<C>, state: &mut (BlockAutomatonState, S)) -> Result<Lattice<C>, String> {
+        let automaton = self.automaton.clone();
+        let odd_step = state.0.odd_step;
+        state.0.odd_step = !state.0.odd_step;
 
-impl<C, S, B> BlockAutomatonMachine<C, B, [C; 4], S>
+        let mut new_lattice = lattice.clone();
+        let (size_x, size_y) = (lattice.size.0, lattice.size.1);
+        
+        for x in (0..lattice.size.0 + (odd_step as u32)).step_by(2) {
+            for y in (0..lattice.size.1 + (odd_step as u32)).step_by(2) {
+                let neighborhood = Self::get_neighbors(&lattice, x, y, odd_step)?;
+                let (tl, tr, bl, br) = automaton(&neighborhood, &mut state.1).into();
+
+                if odd_step {
+                    if x != 0 && y != 0 { new_lattice.set(x - 1, y - 1, tl); };
+                    if x != size_x && y != 0 { new_lattice.set(x, y - 1, tr); };
+                    if x != 0 && y != size_y { new_lattice.set(x - 1, y, bl); };
+                    if x != size_x && y != size_y { new_lattice.set(x, y, br); };
+                } else {
+                    new_lattice.set(x, y, tl);
+                    new_lattice.set(x + 1, y, tr);
+                    new_lattice.set(x, y + 1, bl);
+                    new_lattice.set(x + 1, y + 1, br);
+                }
+            }
+        }
+
+        Ok(new_lattice)
+    }
+}
+
+impl<C, S> AutomatonMachine<C, (BlockAutomatonState, S)> for BlockAutomatonMachine<C, PeriodicBoundary, [C; 4], S>
     where C: Clone + PartialEq + Eq, S: Clone
 {
-    fn __step<F>(&self, lattice: Lattice<C>, state: &mut (BlockAutomatonState, S), neighbors_fn: F) -> Result<Lattice<C>, String>
-        where F: Fn(&Lattice<C>, u32, u32, bool) -> Result<[C; 4], String>
-    {
+    fn step(&self, lattice: Lattice<C>, state: &mut (BlockAutomatonState, S)) -> Result<Lattice<C>, String> {
         let automaton = self.automaton.clone();
         let odd_step = state.0.odd_step;
         state.0.odd_step = !state.0.odd_step;
@@ -137,7 +168,7 @@ impl<C, S, B> BlockAutomatonMachine<C, B, [C; 4], S>
 
         for x in (0..lattice.size.0).step_by(2) {
             for y in (0..lattice.size.1).step_by(2) {
-                let neighborhood = neighbors_fn(&lattice, x, y, odd_step)?;
+                let neighborhood = Self::get_neighbors(&lattice, x, y, odd_step)?;
                 let (tl, tr, bl, br) = automaton(&neighborhood, &mut state.1).into();
 
                 if odd_step {
@@ -158,28 +189,12 @@ impl<C, S, B> BlockAutomatonMachine<C, B, [C; 4], S>
     }
 }
 
-impl<C, S, B> AutomatonMachine<C, (BlockAutomatonState, S)> for BlockAutomatonMachine<C, FixedBoundary<C, B>, [C; 4], S>
-    where C: Clone + PartialEq + Eq, S: Clone, B: ToCell<C>
-{
-    fn step(&self, lattice: Lattice<C>, state: &mut (BlockAutomatonState, S)) -> Result<Lattice<C>, String> {
-        self.__step(lattice, state, Self::get_neighbors)
-    }
-}
-
-impl<C, S> AutomatonMachine<C, (BlockAutomatonState, S)> for BlockAutomatonMachine<C, PeriodicBoundary, [C; 4], S>
-    where C: Clone + PartialEq + Eq, S: Clone
-{
-    fn step(&self, lattice: Lattice<C>, state: &mut (BlockAutomatonState, S)) -> Result<Lattice<C>, String> {
-        self.__step(lattice, state, Self::get_neighbors)
-    }
-}
-
 pub struct BlockAutomaton<C, B, NN, S>
     where C: Clone + PartialEq + Eq, S: Clone
 {
     lattice: Lattice<C>,
     automaton: BlockAutomatonMachine<C, B, NN, S>,
-    global_state: S,
+    global_state: (BlockAutomatonState, S),
 
     state: Option<Lattice<C>>,
     error: bool,
@@ -206,12 +221,12 @@ impl<C, B, NN, S> BlockAutomaton<C, B, NN, S>
             _phantom: PhantomData,
         };
 
-        Ok(Self { lattice, automaton, global_state, state: None, error: false })
+        Ok(Self { lattice, automaton, global_state: (BlockAutomatonState { odd_step: false }, global_state), state: None, error: false })
     }
 }
 
 impl<C, B, NN, S> Iterator for BlockAutomaton<C, B, NN, S>
-    where C: Clone + PartialEq + Eq, S: Clone, BlockAutomatonMachine<C, B, NN, S>: AutomatonMachine<C, S>
+    where C: Clone + PartialEq + Eq, S: Clone, BlockAutomatonMachine<C, B, NN, S>: AutomatonMachine<C, (BlockAutomatonState, S)>
 {
     type Item = Result<Lattice<C>, String>;
 
