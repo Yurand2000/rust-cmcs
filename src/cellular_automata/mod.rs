@@ -17,6 +17,8 @@ pub mod prelude {
 
 pub mod elementary_automaton;
 pub mod automaton_2d;
+pub mod block_automaton;
+
 pub mod maze_solver;
 pub mod game_of_life;
 pub mod forest_fire;

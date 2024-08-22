@@ -1,4 +1,4 @@
-use crate::cellular_automata::prelude::automaton_2d::*;
+use crate::cellular_automata::prelude::{*, automaton_2d::*};
 
 pub struct Boundary;
 

@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, ImageData};
 
 use crate::prelude::*;
-use crate::cellular_automata::prelude::{*, elementary::*};
+use crate::cellular_automata::prelude::{StartingState, elementary::*};
 
 #[wasm_bindgen(js_name = CA_ELEM)]
 pub struct Model { }
