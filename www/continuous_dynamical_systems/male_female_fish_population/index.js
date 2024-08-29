@@ -67,12 +67,12 @@ function updatePlot() {
         .male_death_rate(Number(male_death_rate.value))
         .carrying_capacity(Number(carrying_cap.value));
     chart = Model.draw(canvas, params);
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
-        `Initial Female Pop (F(0)): ${init_female_pop.value}, ` + 
-        `Initial Male Pop (M(0)): ${init_male_pop.value}, ` + 
-        `Birth Rate (r): ${birth_rate.value}, ` + 
-        `Male Death Rate (s): ${male_death_rate.value}, ` + 
-        `Carrying Capacity (K): ${carrying_cap.value}`;
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
+        `Initial Female Pop ($ F(0) $): ${init_female_pop.value}, ` + 
+        `Initial Male Pop ($ M(0) $): ${init_male_pop.value}<br/>` + 
+        `Birth Rate ($ r $): ${birth_rate.value}, ` + 
+        `Male Death Rate ($ s $): ${male_death_rate.value}, ` + 
+        `Carrying Capacity ($ K $): ${carrying_cap.value}`;
     MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	

@@ -33,14 +33,18 @@
                     SIR Model
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    dS/dt = -βSI</br>
-                    dI/dt = βSI - γI</br>
-                    dR/dt = γI
+                    $$
+                    \begin{cases}
+                        \frac{dS}{dt} = - \beta S I \\
+                        \frac{dI}{dt} = \beta S I - \gamma I \\
+                        \frac{dR}{dt} = \gamma I
+                    \end{cases}
+                    $$
                 </p>
-                <p class="ml-4 mr-4 text-l font-normal">
-                    where β is the infection coefficient and γ is the recovery coefficient
+                <p class="ml-4 mr-4 text-l font-normal text-center">
+                    where $ \beta $ is the infection coefficient and $ \gamma $ is the recovery coefficient
                 </p>
-                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal text-center">
                     Loading...
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>

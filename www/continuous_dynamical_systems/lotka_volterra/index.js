@@ -70,13 +70,13 @@ function updatePlot() {
         .hunting_meetings(Number(hunting_meetings.value))
         .hunt_offsprings(Number(hunt_offsprings.value));
     chart = Model.draw(canvas, params);
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
-        `Initial Prey Pop (F(0)): ${init_prey_pop.value}, ` + 
-        `Initial Predator Pop (M(0)): ${init_predator_pop.value}, ` + 
-        `Prey Birth Rate (r): ${prey_birth_rate.value}, ` + 
-        `Predator Death Rate (s): ${predator_death_rate.value}, ` + 
-        `Hunting Meetings (a): ${hunting_meetings.value}, ` +
-        `Hunt Offsprings (b): ${hunt_offsprings.value}`;
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
+        `Initial Prey Pop ($ F(0) $): ${init_prey_pop.value}, ` + 
+        `Initial Predator Pop ($ M(0) $): ${init_predator_pop.value}, ` + 
+        `Prey Birth Rate ($ r $): ${prey_birth_rate.value}<br/>` + 
+        `Predator Death Rate ($ s $): ${predator_death_rate.value}, ` + 
+        `Hunting Meetings ($ a $): ${hunting_meetings.value}, ` +
+        `Hunt Offsprings ($ b $): ${hunt_offsprings.value}`;
     MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	

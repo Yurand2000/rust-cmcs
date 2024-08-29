@@ -33,14 +33,19 @@
                     SIR Model + Vaccination
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    dS/dt = (1 - p)μ - βSI - μS</br>
-                    dI/dt = βSI - γI - μI</br>
-                    dR/dt = pμ + γI - μR
+                    $$
+                    \begin{cases}
+                        \frac{dS}{dt} = (1 - p)\mu - \beta S I - \mu S \\
+                        \frac{dI}{dt} = \beta S I - \gamma I - \mu I \\
+                        \frac{dR}{dt} = p \mu + \gamma I - \mu R
+                    \end{cases}
+                    $$
                 </p>
-                <p class="ml-4 mr-4 text-l font-normal">
-                    where β is the infection coefficient, γ is the recovery coefficient, μ is the birth/death coefficient and p is the vaccination coefficient
+                <p class="ml-4 mr-4 text-l font-normal text-center">
+                    where $ \beta $ is the infection coefficient, $ \gamma $ is the recovery coefficient<br/>
+                    $ \mu $ is the birth/death coefficient and $ p $ is the vaccination coefficient
                 </p>
-                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal text-center">
                     Loading...
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>

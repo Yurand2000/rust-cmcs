@@ -33,14 +33,18 @@
                     SIR Model + Birth/Death
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    dS/dt = μ - βSI - μS</br>
-                    dI/dt = βSI - γI - μI</br>
-                    dR/dt = γI - μR
+                    $$
+                    \begin{cases}
+                        \frac{dS}{dt} = \mu - \beta S I - \mu S \\
+                        \frac{dI}{dt} = \beta S I - \gamma I - \mu I \\
+                        \frac{dR}{dt} = \gamma I - \mu R
+                    \end{cases}
+                    $$
                 </p>
                 <p class="ml-4 mr-4 text-l font-normal">
-                    where β is the infection coefficient, γ is the recovery coefficient and μ is the birth/death coefficient
+                    where $ \beta $ is the infection coefficient, $ \gamma $ is the recovery coefficient and $ \mu $ is the birth/death coefficient
                 </p>
-                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal text-center">
                     Loading...
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>

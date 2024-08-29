@@ -33,14 +33,18 @@
                     Male-Female Fish Population
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    dF/dt = r * F(t) * (1 - (F(t)+M(t))/K)</br>
-                    dM/dt = r * F(t) * (1 - (F(t)+M(t))/K) - s * M(t)</br>
+                    $$
+                    \begin{cases}
+                        \frac{dF}{dt} = r \cdot F(t) \cdot \frac{1 - (F(t) + M(t))}{K} \\
+                        \frac{dM}{dt} = r \cdot F(t) \cdot \frac{1 - (F(t) + M(t))}{K} - s \cdot M(t)
+                    \end{cases}
+                    $$
                 </p>
-                <p class="ml-4 mr-4 text-l font-normal">
-                    where r > 0 is the birth/death rate, s ≥ 0 is the male death rate due to figts,</br>
-                    K ≥ 0 is the carrying capacity
+                <p class="ml-4 mr-4 text-l font-normal text-center">
+                    where $ r > 0 $ is the birth/death rate, $ s \ge 0 $ is the male death rate due to fights,</br>
+                    $ K \ge 0 $ is the carrying capacity
                 </p>
-                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal text-center">
                     Loading...
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>

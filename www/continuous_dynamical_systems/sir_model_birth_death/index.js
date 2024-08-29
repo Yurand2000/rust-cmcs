@@ -120,13 +120,13 @@ function updatePlot() {
         .recovery_coefficient(Number(recovery_coefficient.value))
         .birth_rate(Number(birth_rate.value));
     chart = Model.draw(canvas, params);
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
-        `Initial Susceptible Pop (S(0)): ${init_susceptible_pop.value}, ` + 
-        `Initial Infected Pop (I(0)): ${init_infected_pop.value}, ` + 
-        `Initial Recovered Pop (R(0)): ${init_recovered_pop.value}, ` + 
-        `Infection Coefficient (β): ${infection_coefficient.value}, ` + 
-        `Recovery Coefficient (γ): ${recovery_coefficient.value}, ` +
-        `Birth Rate (μ): ${birth_rate.value}`;
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
+        `Initial Susceptible Pop ($ S(0) $): ${init_susceptible_pop.value}, ` + 
+        `Initial Infected Pop ($ I(0) $): ${init_infected_pop.value}, ` + 
+        `Initial Recovered Pop ($ R(0) $): ${init_recovered_pop.value}<br/>` + 
+        `Infection Coefficient ($ \\beta $): ${infection_coefficient.value}, ` + 
+        `Recovery Coefficient ($ \\gamma $): ${recovery_coefficient.value}, ` +
+        `Birth Rate ($ \\mu $): ${birth_rate.value}`;
     MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
