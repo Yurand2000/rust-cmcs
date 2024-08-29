@@ -76,10 +76,11 @@ function updatePlot() {
         .unbinding_rates(2, 20, 20)
         .decay_rates(1, 100, 1);
     chart = Model.draw(canvas, chosen_solver, params);
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
-        `Initial G1: ${init_g1_pop.value}, ` + 
-        `Initial G2: ${init_g2_pop.value}, ` + 
-        `Initial G3: ${init_g3_pop.value}`;
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
+        `Initial $ \\ce{g1} $: ${init_g1_pop.value}, ` + 
+        `Initial $ \\ce{g2} $: ${init_g2_pop.value}, ` + 
+        `Initial $ \\ce{g3} $: ${init_g3_pop.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

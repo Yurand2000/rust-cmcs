@@ -7,6 +7,8 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
 		<script src="https://cdn.tailwindcss.com"></script>
+        <script>MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' }, loader: {load: ['[tex]/mhchem']} };</script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 		<title>Enzymatic Activity</title>        
 	</head>
     <body>
@@ -31,14 +33,14 @@
                     Enzymatic Activity
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    E + S == b ==> ES</br>
-                    ES == ub ==> E + S</br>
-                    ES == c ==> E + P
+                    $$ \ce{E + S ->[b] ES} $$
+                    $$ \ce{ES ->[ub] E + S} $$
+                    $$ \ce{ES ->[c] E + P} $$
                 </p>
                 <p class="ml-4 mr-4 text-l font-normal">
-                    where b is the binding coefficient, ub is the unbinding coefficient and c is the catalysis coefficient
+                    where $ b $ is the binding coefficient, $ ub $ is the unbinding coefficient and $ c $ is the catalysis coefficient
                 </p>
-                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal text-center">
                     Loading...
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>

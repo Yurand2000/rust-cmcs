@@ -7,6 +7,8 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
 		<script src="https://cdn.tailwindcss.com"></script>
+        <script>MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' }, loader: {load: ['[tex]/mhchem']} };</script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 		<title>Lotka-Volterra Predator-Prey</title>        
 	</head>
     <body>
@@ -31,15 +33,15 @@
                     Lotka-Volterra Predator-Prey
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    V == r ==> 2V</br>
-                    V + P == a ==> (b+1)P</br> 
-                    P == s ==> 
+                    $$ \ce{V ->[r] 2V} $$
+                    $$ \ce{V + P ->[a] $ (b+1) $ P} $$
+                    $$ \ce{P ->[s]} $$
                 </p>
-                <p class="ml-4 mr-4 text-l font-normal">
-                    where r > 0 is the birth rate of preys, s > 0 is the death rate of predators,</br>
-                    1 ≥ a ≥ 0 is the proportion of meetings resulting in a hunt, and b > 0 is the number of predator offsprings per hunt.
+                <p class="ml-4 mr-4 text-l font-normal text-center">
+                    where $ r > 0 $ is the birth rate of preys, $ s > 0 $ is the death rate of predators,</br>
+                    $ 1 \ge a \ge 0 $ is the proportion of meetings resulting in a hunt, and $ b > 0 $ is the number of predator offsprings per hunt.
                 </p>
-                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal text-center">
                     Loading...
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>

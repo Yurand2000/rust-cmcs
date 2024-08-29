@@ -81,12 +81,13 @@ function updatePlot() {
         .unbinding_rate(Number(unbinding_coeff.value))
         .catalysis_rate(Number(catalysis_coeff.value));
     chart = Model.draw(canvas, chosen_solver, params);
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
-        `Initial Enzyme (E(0)): ${init_enzyme.value}, ` + 
-        `Initial Reactant (S(0)): ${init_reactant.value}, ` + 
-        `Binding Coefficient (b): ${binding_coeff.value}, ` + 
-        `Unbinding Coefficient (ub): ${unbinding_coeff.value}, ` + 
-        `Catalysis Coefficient (c): ${catalysis_coeff.value}`;
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
+        `Initial Enzyme ($ E(0) $): ${init_enzyme.value}, ` + 
+        `Initial Reactant ($ S(0) $): ${init_reactant.value}<br/>` + 
+        `Binding Coefficient ($ b $): ${binding_coeff.value}, ` + 
+        `Unbinding Coefficient ($ ub $): ${unbinding_coeff.value}, ` + 
+        `Catalysis Coefficient ($ c $): ${catalysis_coeff.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

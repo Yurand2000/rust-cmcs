@@ -7,6 +7,8 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
 		<script src="https://cdn.tailwindcss.com"></script>
+        <script>MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' }, loader: {load: ['[tex]/mhchem']} };</script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 		<title>Negative Feedback Loop</title>        
 	</head>
     <body>
@@ -30,24 +32,16 @@
                 <h1 class="mt-4 text-5xl font-extrabold leading-none text-gray-900">
                     Negative Feedback Loop
                 </h1>
-                <div class="flex items-left flex-row m-4">
-                    <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                        g1 == 10 ==> g1 + p1</br>
-                        g2 == 10000 == > g2 + p2</br> 
-                        g3 == 10 ==> g3 + p3
-                    </p>
-                    <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                        p1 + g2 == 10 ==> p1g2 == 2 ==> p1 + g2</br>
-                        p2 + g3 == 0.1 == > p2g3 == 20 ==> p2 + g3</br> 
-                        p3 + g1 == 10> ==> p3g1 == 20 ==> p3 + g1
-                    </p>
-                    <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                        p1 == 1 ==></br>
-                        p2 == 100 ==></br> 
-                        p3 == 1 ==>
-                    </p>
-                </div>
-                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                <p class="mt-4 ml-4 mr-4 text-xl font-normal">
+                    $$
+                    \begin{matrix}
+                    \ce{g1 ->[10] g1 + p1} & \ce{p1 + g2 <=>[10][2] p1g2} & \ce{p1 ->[1]} \\
+                    \ce{g2 ->[10000] g2 + p2} & \ce{p2 + g3 <=>[0.1][20] p2g3} & \ce{p2 ->[100]} \\
+                    \ce{g3 ->[10] g3 + p3} & \ce{p3 + g1 <=>[10][20] p3g1} & \ce{p3 ->[1]} \\
+                    \end{matrix}
+                    $$
+                </p>
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal text-center">
                     Loading...
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>
