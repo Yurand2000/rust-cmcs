@@ -73,6 +73,7 @@ function updatePlot() {
         `Birth Rate (r): ${birth_rate.value}, ` + 
         `Male Death Rate (s): ${male_death_rate.value}, ` + 
         `Carrying Capacity (K): ${carrying_cap.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

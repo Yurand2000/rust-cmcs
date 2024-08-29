@@ -123,6 +123,7 @@ function updatePlot() {
         `Initial Recovered Pop (R(0)): ${init_recovered_pop.value}, ` + 
         `Infection Coefficient (β): ${infection_coefficient.value}, ` + 
         `Recovery Coefficient (γ): ${recovery_coefficient.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

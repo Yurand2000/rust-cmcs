@@ -127,6 +127,7 @@ function updatePlot() {
         `Infection Coefficient (β): ${infection_coefficient.value}, ` + 
         `Recovery Coefficient (γ): ${recovery_coefficient.value}, ` +
         `Birth Rate (μ): ${birth_rate.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

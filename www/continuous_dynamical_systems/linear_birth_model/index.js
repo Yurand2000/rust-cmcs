@@ -58,10 +58,11 @@ function updatePlot() {
         .offsprings_per_individual(Number(offsprings.value))
         .reproduction_period(Number(repr_rate.value));
     chart = Model.draw(canvas, params);
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
-        `Initial Pop (N(0)): ${init_pop.value}, ` + 
-        `Offsprings (λ): ${offsprings.value}, ` + 
-        `Reproduction Period (σ): ${repr_rate.value}`;
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
+        `Initial Pop ($ N(0) $): ${init_pop.value}<br/>` + 
+        `Offsprings ($ \\lambda $): ${offsprings.value},` + 
+        `Reproduction Period ($ \\sigma $): ${repr_rate.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

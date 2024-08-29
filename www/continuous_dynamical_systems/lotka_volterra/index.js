@@ -77,6 +77,7 @@ function updatePlot() {
         `Predator Death Rate (s): ${predator_death_rate.value}, ` + 
         `Hunting Meetings (a): ${hunting_meetings.value}, ` +
         `Hunt Offsprings (b): ${hunt_offsprings.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

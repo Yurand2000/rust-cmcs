@@ -58,6 +58,7 @@ function updatePlot() {
     canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
         `Initial Pop (N(0)): ${init_pop.value}, ` + 
         `Decay Rate (d): ${decay_rate.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

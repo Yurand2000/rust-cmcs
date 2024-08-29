@@ -58,10 +58,11 @@ function updatePlot() {
         .birth_rate(Number(birth_rate.value))
         .carrying_capacity(Number(carrying_capacity.value));
     chart = Model.draw(canvas, params);
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
-        `Initial Pop (N(0)): ${init_pop.value}, ` + 
-        `Birth Rate (r): ${birth_rate.value}, ` +
-        `Carrying Capacity (K): ${carrying_capacity.value}`;
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
+        `Initial Pop ($ N(0) $): ${init_pop.value}<br/>` + 
+        `Birth Rate ($ r $): ${birth_rate.value}, ` +
+        `Carrying Capacity ($ K $): ${carrying_capacity.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }
