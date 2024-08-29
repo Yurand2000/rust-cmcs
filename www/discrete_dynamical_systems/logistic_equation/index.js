@@ -61,11 +61,12 @@ function updatePlot() {
         .carrying_capacity(Number(carrying_cap.value));
     chart = Model.draw(canvas, plot_type.value, params);
     let equilibrium = Math.round(carrying_cap.value * (1 - 1 / birth_rate.value));
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
-        `Initial Pop (N(0)): ${init_pop.value}, ` + 
-        `Birth Rate (r): ${birth_rate.value}, ` + 
-        `Carrying Capacity (K): ${carrying_cap.value}, ` +
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
+        `Initial Pop ($ N(0) $): ${init_pop.value}, ` + 
+        `Birth Rate ($ r $): ${birth_rate.value},<br/>` + 
+        `Carrying Capacity ($ K $): ${carrying_cap.value}, ` +
         `Equilibrium Point: ${equilibrium}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

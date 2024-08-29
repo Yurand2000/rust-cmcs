@@ -7,6 +7,8 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
 		<script src="https://cdn.tailwindcss.com"></script>
+        <script>MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' } };</script>         
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 		<title>Linear Birth/Death Model + Migration</title>        
 	</head>
     <body>
@@ -31,12 +33,12 @@
                     Linear Birth/Death Model + Migration
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    N(t+1) = αN(t) + β
+                    $$ N(t+1) = \alpha N(t) + \beta $$
                 </p>
                 <p class="ml-4 mr-4 text-l font-normal">
-                    where α > 0 is the birth/death rate, β ≥ 0 is the migration coefficient
+                    where $ \alpha > 0 $ is the birth/death rate, $ \beta \ge 0 $ is the migration coefficient
                 </p>
-                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal text-center">
                     Loading...
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>

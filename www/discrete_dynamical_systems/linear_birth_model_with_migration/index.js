@@ -65,11 +65,12 @@ function updatePlot() {
     } else {
         var equilibrium = "No equilibrium";
     }
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
-        `Initial Pop (N(0)): ${init_pop.value}, ` + 
-        `Birth/Death Rate (α): ${birth_rate.value}, ` + 
-        `Migration Coefficient (β): ${migration_coeff.value}, ` +
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
+        `Initial Pop ($ N(0) $): ${init_pop.value}, ` + 
+        `Birth/Death Rate ($ \\alpha $): ${birth_rate.value},<br/>` + 
+        `Migration Coefficient ($ \\beta $): ${migration_coeff.value}, ` +
         `Equilibrium Point: ${equilibrium}`;
     const end = performance.now();
+    MathJax.typeset();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

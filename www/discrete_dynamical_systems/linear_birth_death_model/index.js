@@ -60,10 +60,11 @@ function updatePlot() {
         .birth_rate(Number(birth_rate.value))
         .death_rate(Number(death_rate.value));
     chart = Model.draw(canvas, plot_type.value, params);
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
-        `Initial Pop (N(0)): ${init_pop.value}, ` + 
-        `Birth Rate (r): ${birth_rate.value}, ` + 
-        `Death Rate (s): ${death_rate.value}`;
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
+        `Initial Pop ($ N(0) $): ${init_pop.value}, ` + 
+        `Birth Rate ($ r $): ${birth_rate.value}, ` + 
+        `Death Rate ($ s $): ${death_rate.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

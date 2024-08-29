@@ -7,6 +7,8 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Michroma">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.css"/>
 		<script src="https://cdn.tailwindcss.com"></script>
+        <script>MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' } };</script>         
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 		<title>Linear Birth/Death Model</title>        
 	</head>
     <body>
@@ -31,12 +33,12 @@
                     Linear Birth Death Model
                 </h1>
                 <p class="mt-4 ml-4 mr-4 text-xl font-normal">
-                    N(t+1) = (r - s) * N(t)
+                    $$ N(t+1) = (r - s) * N(t) $$
                 </p>
                 <p class="ml-4 mr-4 text-l font-normal">
-                    where r = 1 + λ*Δt/σ, ie. 1 ≤ r ≤ +inf, 0 ≤ s ≤ 1
+                    where $ r = 1 + (\lambda * \Delta t / \sigma) $, $ 1 \le r \le + \infty $, $ 0 \le s \le 1 $
                 </p>
-                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal">
+                <p id="canvas_text" class="mt-4 ml-4 mr-4 text-xl font-normal text-center">
                     Loading...
                 </p>
                 <canvas class="m-2" id="canvas" width="600" height="400"></canvas>
