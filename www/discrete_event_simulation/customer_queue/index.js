@@ -63,10 +63,11 @@ function updatePlot() {
         .customer_served_std_dev(Number(std_dev_param.value))
         .simulation_seed(seed.value);
     chart = Model.draw(canvas, params);
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
         `Arrival Rate: ${lambda_param.value}, ` + 
         `Service Mean Time: ${mean_param.value}, ` + 
         `Service Time StdDev: ${std_dev_param.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }

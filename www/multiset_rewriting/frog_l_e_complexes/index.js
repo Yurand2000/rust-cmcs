@@ -69,12 +69,13 @@ function updatePlot() {
         .selection_strength(Number(selection_strength.value))
         .simulation_seed(seed.value);
     chart = Model.draw(canvas, params);
-    canvas_text.innerHTML = `Max Time (t): ${max_time.value}, ` +
+    canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
         `Init Lessonae: ${init_lessonae.value}, ` + 
-        `Init Hybrids: ${init_hybrid.value}, ` + 
+        `Init Hybrids: ${init_hybrid.value}<br/>` + 
         `Init Ridibundus: ${init_ridibundus.value}, ` + 
         `Carrying Capacity: ${carrying_capacity.value}, ` + 
         `Selection Strength: ${selection_strength.value}`;
+    MathJax.typeset();
     const end = performance.now();
     status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;	
 }
