@@ -9,13 +9,13 @@ use crate::discrete_dynamical_systems::prelude::*;
 pub struct Model { }
 
 #[wasm_bindgen(js_name = DDS_LBM_Params)]
+#[derive(Default)]
 pub struct Params {
     max_time: f32,
     time_step: f32,
     initial_population: f32,
     offsprings_per_individual: f32,
     reproduction_period: f32,
-    max_population_display: f32,
 }
 
 #[wasm_bindgen(js_class = DDS_LBM)]
@@ -35,28 +35,24 @@ impl Model {
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
     
-        let x_axis_range = 0f32..params.max_time;
-
         let max_population_display =
-            if params.max_population_display == 0f32 {
-                params.predict_max_population_size() * 2f32
-            } else {
-                params.max_population_display
-            } as u32;
+            (params.predict_max_population_size() * 1.5f32) as u32;
 
+        let x_axis_range = 0f32..params.max_time;
         let y_axis_range = 0..max_population_display;
     
         let mut chart = ChartBuilder::on(&area)
             .margin(20u32)
-            .x_label_area_size(30u32)
-            .y_label_area_size(30u32)
+            .x_label_area_size(40u32)
+            .y_label_area_size(60u32)
             .build_cartesian_2d(x_axis_range, y_axis_range)?;
     
         chart.configure_mesh()
             .x_desc("t")
             .y_desc("N(t)")
-            .x_labels(params.max_time as usize)
+            .x_labels(10)
             .y_labels(10)
+            .y_label_formatter(&|x| format!("{:e}", x))
             .draw()?;
 
         let birth_model = params.to_model();
@@ -76,21 +72,18 @@ impl Model {
     fn draw_phase_graph(canvas: HtmlCanvasElement, params: Params) -> MyDrawResult<()> {
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
-
+    
         let max_population_display =
-            if params.max_population_display == 0f32 {
-                params.predict_max_population_size() * 1.5f32
-            } else {
-                params.max_population_display
-            };
+            params.predict_max_population_size() * 1.5f32;
 
+        let max_time = params.max_time;
         let x_axis_range = 0f32..max_population_display;
         let y_axis_range = 0f32..max_population_display;
     
         let mut chart = ChartBuilder::on(&area)
             .margin(20u32)
-            .x_label_area_size(30u32)
-            .y_label_area_size(30u32)
+            .x_label_area_size(40u32)
+            .y_label_area_size(60u32)
             .build_cartesian_2d(x_axis_range, y_axis_range)?;
     
         chart.configure_mesh()
@@ -98,6 +91,8 @@ impl Model {
             .y_desc("N(t+1)")
             .x_labels(10)
             .y_labels(10)
+            .x_label_formatter(&|x| format!("{:e}", x))
+            .y_label_formatter(&|x| format!("{:e}", x))
             .draw()?;
 
         let model = params.to_model();
@@ -111,7 +106,7 @@ impl Model {
         // draw ratio
         chart.draw_series(LineSeries::new(
             Simulation::new(model.clone())
-                .time_limit(chart.x_range().end)
+                .time_limit(max_time)
                 .phase_graph_slope(),
             &RED
         ))?;
@@ -119,7 +114,7 @@ impl Model {
         // draw phase graph
         chart.draw_series(LineSeries::new(
             Simulation::new(model)
-                .time_limit(chart.x_range().end)
+                .time_limit(max_time)
                 .phase_graph_lines(),
             &BLACK
         ))?;
@@ -131,8 +126,7 @@ impl Model {
 #[wasm_bindgen(js_class = DDS_LBM_Params)]
 impl Params {
     pub fn builder() -> Self {
-        Self { max_time: 1f32, time_step: 1f32, initial_population: 1f32,
-            offsprings_per_individual: 1f32, reproduction_period: 1f32, max_population_display: 0f32 }
+        Self { ..Default::default() }
     }
 
     pub fn max_time(mut self, max_time: f32) -> Self {
@@ -157,11 +151,6 @@ impl Params {
 
     pub fn reproduction_period(mut self, reproduction_period: f32) -> Self {
         self.reproduction_period = reproduction_period;
-        self
-    }
-
-    pub fn max_population_display(mut self, max_population_display: f32) -> Self {
-        self.max_population_display = max_population_display;
         self
     }
 

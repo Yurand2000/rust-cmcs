@@ -29,27 +29,22 @@ impl Model {
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
     
-        let x_axis_range = 0f32..params.max_time;
-
         let max_population_display =
-            if params.max_population_display == 0f32 {
-                params.predict_max_population_size() * 2f32
-            } else {
-                params.max_population_display
-            } as u32;
+            (params.predict_max_population_size() * 1.5f32) as u32;
 
+        let x_axis_range = 0f32..params.max_time;
         let y_axis_range = 0..max_population_display;
     
         let mut chart = ChartBuilder::on(&area)
             .margin(20u32)
-            .x_label_area_size(30u32)
-            .y_label_area_size(30u32)
+            .x_label_area_size(40u32)
+            .y_label_area_size(60u32)
             .build_cartesian_2d(x_axis_range, y_axis_range)?;
     
         chart.configure_mesh()
             .x_desc("t")
             .y_desc("N(t)")
-            .x_labels(params.max_time as usize)
+            .x_labels(10)
             .y_labels(10)
             .draw()?;
 
@@ -62,20 +57,31 @@ impl Model {
         chart.draw_series(LineSeries::new(
             simulation.clone().simulation_map(|(x, pops)| (x, pops.0 as u32)),
             &BLUE
-        ))?;
+        ))?
+        .label("F(t)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], BLUE));
 
         // male population
         chart.draw_series(LineSeries::new(
             simulation.clone().simulation_map(|(x, pops)| (x, pops.1 as u32)),
             &RED
-        ))?;
+        ))?
+        .label("M(t)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], RED));
 
         // total population
         chart.draw_series(LineSeries::new(
             simulation.clone().simulation_map(|(x, pops)| (x, (pops.0 + pops.1) as u32)),
             &GREEN
-        ))?;
+        ))?
+        .label("N(t)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], GREEN));
     
+        // draw legend
+        chart.configure_series_labels()
+            .background_style(WHITE)
+            .draw()?;
+
         Ok(())
     }
 }
