@@ -71,8 +71,8 @@ function updatePlot() {
         .hunt_offsprings(Number(hunt_offsprings.value));
     chart = Model.draw(canvas, params);
     canvas_text.innerHTML = `Max Time ($ t $): ${max_time.value}, ` +
-        `Initial Prey Pop ($ F(0) $): ${init_prey_pop.value}, ` + 
-        `Initial Predator Pop ($ M(0) $): ${init_predator_pop.value}, ` + 
+        `Initial Prey Pop ($ V(0) $): ${init_prey_pop.value}, ` + 
+        `Initial Predator Pop ($ P(0) $): ${init_predator_pop.value}, ` + 
         `Prey Birth Rate ($ r $): ${prey_birth_rate.value}<br/>` + 
         `Predator Death Rate ($ s $): ${predator_death_rate.value}, ` + 
         `Hunting Meetings ($ a $): ${hunting_meetings.value}, ` +

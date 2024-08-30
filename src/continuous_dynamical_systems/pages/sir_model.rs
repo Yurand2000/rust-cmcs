@@ -9,6 +9,7 @@ use crate::continuous_dynamical_systems::prelude::*;
 pub struct Model { }
 
 #[wasm_bindgen(js_name = CDS_SLE_SIR_Params)]
+#[derive(Default)]
 pub struct Params {
     solver: ODESolver,
     max_time: f32,
@@ -17,7 +18,6 @@ pub struct Params {
     initial_recovered_pop: f32,
     infection_coefficient: f32,
     recovery_coefficient: f32,
-    max_population_display: f32,
 }
 
 #[wasm_bindgen(js_class = CDS_SLE_SIR)]
@@ -29,20 +29,20 @@ impl Model {
     fn draw_function(canvas: HtmlCanvasElement, params: Params) -> MyDrawResult<()> {
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
-    
+
         let x_axis_range = 0f32..params.max_time;
         let y_axis_range = 0f32..1f32;
     
         let mut chart = ChartBuilder::on(&area)
             .margin(20u32)
-            .x_label_area_size(30u32)
-            .y_label_area_size(30u32)
+            .x_label_area_size(40u32)
+            .y_label_area_size(60u32)
             .build_cartesian_2d(x_axis_range, y_axis_range)?;
     
         chart.configure_mesh()
             .x_desc("t")
             .y_desc("N(t)")
-            .x_labels(params.max_time as usize)
+            .x_labels(10)
             .y_labels(10)
             .draw()?;
 
@@ -81,19 +81,30 @@ impl Model {
         chart.draw_series(LineSeries::new(
             simulation.clone().simulation_map(|(x, pops)| (x, pops.0)),
             &GREEN
-        ))?;
+        ))?
+        .label("S(t)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], GREEN));
 
         // infected population
         chart.draw_series(LineSeries::new(
             simulation.clone().simulation_map(|(x, pops)| (x, pops.1)),
             &RED
-        ))?;
+        ))?
+        .label("I(t)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], RED));
 
         // recovered population
         chart.draw_series(LineSeries::new(
             simulation.clone().simulation_map(|(x, pops)| (x, pops.2)),
             &BLUE
-        ))?;
+        ))?
+        .label("R(t)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], BLUE));
+    
+        // draw legend
+        chart.configure_series_labels()
+            .background_style(WHITE)
+            .draw()?;
     
         Ok(())
     }
@@ -102,8 +113,7 @@ impl Model {
 #[wasm_bindgen(js_class = CDS_SLE_SIR_Params)]
 impl Params {
     pub fn builder() -> Self {
-        Self { solver: ODESolver::RK4, max_time: 1f32, max_population_display: 0f32, initial_susceptible_pop: 0f32,
-            initial_infected_pop: 0f32, initial_recovered_pop: 0f32, infection_coefficient: 0f32, recovery_coefficient: 0f32 }
+        Self { ..Default::default() }
     }
 
     pub fn solver(mut self, solver: String) -> Self {
@@ -138,11 +148,6 @@ impl Params {
 
     pub fn recovery_coefficient(mut self, recovery_coefficient: f32) -> Self {
         self.recovery_coefficient = recovery_coefficient;
-        self
-    }
-
-    pub fn max_population_display(mut self, max_population_display: f32) -> Self {
-        self.max_population_display = max_population_display;
         self
     }
 
