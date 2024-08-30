@@ -72,7 +72,9 @@ impl Model {
                 (x, quantity)
             }),
             &GREEN
-        ))?;
+        ))?
+        .label("S")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], GREEN));
 
         // product quantity
         chart.draw_series(LineSeries::new(
@@ -83,7 +85,9 @@ impl Model {
                 (x, quantity)
             }),
             &BLUE
-        ))?;
+        ))?
+        .label("P")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], BLUE));
 
         // bound reactant quantity
         chart.draw_series(LineSeries::new(
@@ -94,7 +98,14 @@ impl Model {
                 (x, quantity)
             }),
             &RED
-        ))?;
+        ))?
+        .label("ES")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], RED));
+    
+        // draw legend
+        chart.configure_series_labels()
+            .background_style(WHITE)
+            .draw()?;
     
         Ok(())
     }
@@ -138,7 +149,9 @@ impl Model {
                 (x, quantity)
             }),
             &GREEN
-        ))?;
+        ))?
+        .label("S")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], GREEN));
 
         // product quantity
         chart.draw_series(LineSeries::new(
@@ -149,7 +162,9 @@ impl Model {
                 (x, quantity)
             }),
             &BLUE
-        ))?;
+        ))?
+        .label("P")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], BLUE));
 
         // bound reactant quantity
         chart.draw_series(LineSeries::new(
@@ -160,7 +175,14 @@ impl Model {
                 (x, quantity)
             }),
             &RED
-        ))?;
+        ))?
+        .label("ES")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], RED));
+    
+        // draw legend
+        chart.configure_series_labels()
+            .background_style(WHITE)
+            .draw()?;
     
         Ok(())
     }

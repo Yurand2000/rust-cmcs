@@ -49,7 +49,7 @@ impl Model {
                 .map(|(_, q)| (*q) as f32)
                 .reduce(f32::max).unwrap_or(0f32)
             )
-            .reduce(f32::max).unwrap_or(0f32) * 1.5f32;
+            .reduce(f32::max).unwrap_or(0f32) * 1.15f32;
 
         let area = draw_prelude(canvas)?;
         area.fill(&WHITE)?;
@@ -79,7 +79,9 @@ impl Model {
                 (x, quantity)
             }),
             &RED
-        ))?;
+        ))?
+        .label("P1")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], RED));
 
         // p2 quantity
         chart.draw_series(LineSeries::new(
@@ -90,7 +92,9 @@ impl Model {
                 (x, quantity)
             }),
             &BLUE
-        ))?;
+        ))?
+        .label("P2")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], BLUE));
 
         // p3 quantity
         chart.draw_series(LineSeries::new(
@@ -101,7 +105,14 @@ impl Model {
                 (x, quantity)
             }),
             &GREEN
-        ))?;
+        ))?
+        .label("P3")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], GREEN));
+    
+        // draw legend
+        chart.configure_series_labels()
+            .background_style(WHITE)
+            .draw()?;
     
         Ok(())
     }
@@ -152,7 +163,9 @@ impl Model {
                 (x, quantity)
             }),
             &RED
-        ))?;
+        ))?
+        .label("P1")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], RED));
 
         // p2 quantity
         chart.draw_series(LineSeries::new(
@@ -163,7 +176,9 @@ impl Model {
                 (x, quantity)
             }),
             &BLUE
-        ))?;
+        ))?
+        .label("P2")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], BLUE));
 
         // p3 quantity
         chart.draw_series(LineSeries::new(
@@ -174,7 +189,14 @@ impl Model {
                 (x, quantity)
             }),
             &GREEN
-        ))?;
+        ))?
+        .label("P3")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], GREEN));
+    
+        // draw legend
+        chart.configure_series_labels()
+            .background_style(WHITE)
+            .draw()?;
     
         Ok(())
     }

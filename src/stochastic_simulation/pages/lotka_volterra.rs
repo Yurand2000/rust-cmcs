@@ -78,7 +78,9 @@ impl Model {
                 (x, quantity)
             }),
             &RED
-        ))?;
+        ))?
+        .label("V (Preys)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], RED));
 
         // predator quantity
         chart.draw_series(LineSeries::new(
@@ -89,7 +91,14 @@ impl Model {
                 (x, quantity)
             }),
             &BLUE
-        ))?;
+        ))?
+        .label("P (Predators)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], BLUE));
+    
+        // draw legend
+        chart.configure_series_labels()
+            .background_style(WHITE)
+            .draw()?;
     
         Ok(())
     }
@@ -138,7 +147,9 @@ impl Model {
                 (x, quantity)
             }),
             &RED
-        ))?;
+        ))?
+        .label("V (Preys)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], RED));
 
         // predator quantity
         chart.draw_series(LineSeries::new(
@@ -149,7 +160,14 @@ impl Model {
                 (x, quantity)
             }),
             &BLUE
-        ))?;
+        ))?
+        .label("P (Predators)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], BLUE));
+    
+        // draw legend
+        chart.configure_series_labels()
+            .background_style(WHITE)
+            .draw()?;
     
         Ok(())
     }

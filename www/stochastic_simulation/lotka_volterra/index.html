@@ -50,26 +50,26 @@
                     <option value="rk4">ODE: Explicit Runge-Kutta method of order 4 with fixed step size</option>
                     <option value="dop853">ODE: Explicit Runge-Kutta method with Dormand-Prince coefficients of order 8(5,3) and dense output of order 7</option>
                     <option value="dopri5">ODE: Explicit Runge-Kutta method with Dormand-Prince coefficients of order 5(4) and dense output of order 4</option>
-                    <option value="ssa">SSA: Gillespie's Stochastic Simulation Algorithm</option>
+                    <option value="ssa" selected="true">SSA: Gillespie's Stochastic Simulation Algorithm</option>
                 </select>
                 <div class="flex items-left flex-row m-4">
                     <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">
                         <label for="init_prey_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Prey Population</label>
-                        <input id="init_prey_pop" type="range" min="1" max="2000" value="1000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <input id="init_prey_pop" type="range" min="1" max="2000" value="180" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <label for="init_predattor_pop" class="block mb-2 text-sm font-medium text-gray-900">Initial Predator Population</label>
-                        <input id="init_predator_pop" type="range" min="1" max="2000" value="1000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <input id="init_predator_pop" type="range" min="1" max="2000" value="150" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <label for="max_time" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Max Simulation Time</label>
-                        <input id="max_time" type="range" min="0.1" max="1" value="0.1" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <input id="max_time" type="range" min="0.1" max="3" value="1.5" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <label for="seed" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Simulation Seed</label>
                         <input id="seed" type="text" value="0" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"/>
                     </ul>
                     <ul class="flex flex-col items-center m-4 text-sm font-medium text-gray-500 sm:mt-0">    
                         <label for="prey_birth_rate" class="block mb-2 text-sm font-medium text-gray-900">Prey Birth Rate</label>
-                        <input id="prey_birth_rate" type="range" min="1" max="20" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <input id="prey_birth_rate" type="range" min="1" max="20" value="18" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <label for="predator_death_rate" class="block mb-2 text-sm font-medium text-gray-900">Predator Death Rate</label>
-                        <input id="predator_death_rate" type="range" min="1" max="20" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <input id="predator_death_rate" type="range" min="1" max="20" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <label for="hunting_meetings" class="block mb-2 mt-4 text-sm font-medium text-gray-900">Meetings resulting in Hunting Rate</label>
-                        <input id="hunting_meetings" type="range" min="0" max="1" value="0.01" step="0.01" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                        <input id="hunting_meetings" type="range" min="0" max="1" value="0.1" step="0.01" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                         <label for="hunt_offsprings" class="block mb-2 text-sm font-medium text-gray-900">Offsprings per Hunt</label>
                         <input id="hunt_offsprings" type="range" min="1" max="10" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                     </ul>
