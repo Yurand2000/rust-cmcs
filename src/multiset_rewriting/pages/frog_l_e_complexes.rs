@@ -32,12 +32,12 @@ impl Model {
     
         let max_time = params.max_time;
         let x_axis_range = 0f32..params.max_time;
-        let y_axis_range = 0..params.carrying_capacity;
+        let y_axis_range = 0..(params.carrying_capacity as f32 * 2f32 / 3f32) as u32;
     
         let mut chart = ChartBuilder::on(&area)
             .margin(20u32)
-            .x_label_area_size(30u32)
-            .y_label_area_size(30u32)
+            .x_label_area_size(40u32)
+            .y_label_area_size(60u32)
             .build_cartesian_2d(x_axis_range, y_axis_range)?;
     
         chart.configure_mesh()
@@ -54,18 +54,25 @@ impl Model {
 
         let [ll, lyl, lr, lyr, lrd, lyrd, rr, ryr, rdrd, rydrd, rdr, rydr, ryrd] = FrogLEComplexes::adults_objects();
 
+        // lessonae population
         chart.draw_series(LineSeries::new(
             simulation.clone()
                 .map(|(time, state)| (time, state.get(&ll) + state.get(&lyl))),
             &GREEN
-        ))?;
+        ))?
+        .label("Lessonae")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], GREEN));
 
+        // hybrids population
         chart.draw_series(LineSeries::new(
             simulation.clone()
                 .map(|(time, state)| (time, state.get(&lr) + state.get(&lyr) + state.get(&lrd) + state.get(&lyrd))),
             &BLUE
-        ))?;
+        ))?
+        .label("Esculentus (Hybrids)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], BLUE));
 
+        // ridibundus population
         chart.draw_series(LineSeries::new(
             simulation.clone()
                 .map(|(time, state)| (time,
@@ -73,7 +80,14 @@ impl Model {
                     + state.get(&rdr) + state.get(&rydr) + state.get(&ryrd))
                 ),
             &RED
-        ))?;
+        ))?
+        .label("Ridibundus")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], RED));
+    
+        // draw legend
+        chart.configure_series_labels()
+            .background_style(WHITE)
+            .draw()?;
     
         Ok(())
     }

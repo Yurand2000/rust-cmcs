@@ -45,8 +45,8 @@ impl Model {
     
         let mut chart = ChartBuilder::on(&area)
             .margin(20u32)
-            .x_label_area_size(30u32)
-            .y_label_area_size(30u32)
+            .x_label_area_size(40u32)
+            .y_label_area_size(60u32)
             .build_cartesian_2d(x_axis_range, y_axis_range)?;
     
         chart.configure_mesh()
@@ -60,13 +60,22 @@ impl Model {
             simulation.clone()
                 .map(|(time, state)| (time, state.queue_length)),
             &BLUE
-        ))?;
+        ))?
+        .label("Queue size")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], BLUE));
 
         chart.draw_series(LineSeries::new(
             simulation.clone()
                 .map(|(time, state)| (time, (state.operator_available as u32))),
             &GREEN
-        ))?;
+        ))?
+        .label("Available Operator(s)")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 10, y)], GREEN));
+    
+        // draw legend
+        chart.configure_series_labels()
+            .background_style(WHITE)
+            .draw()?;
     
         Ok(())
     }
