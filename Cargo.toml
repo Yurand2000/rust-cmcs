@@ -1,7 +1,7 @@
 [package]
 name = "rust-cmcs"
 version = "0.1.0"
-authors = ["Yuri Andriaccio <yurand2000@gmail.com"]
+authors = ["Yuri Andriaccio <yurand2000@gmail.com>"]
 edition = "2021"
 
 [lib]
